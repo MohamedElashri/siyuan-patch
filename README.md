@@ -15,7 +15,7 @@
 
 ## How to Download Clients (Windows / Mac / Linux)
 
-1. Go to [Release page https://github.com/MohamedElashri/siyuan-patch/releases](https://github.com/MohamedElashri/siyuan-patch/releases)
+1. Go to [Release page](https://github.com/MohamedElashri/siyuan-patch/releases)
 
 2. Download the version for your platform
 
