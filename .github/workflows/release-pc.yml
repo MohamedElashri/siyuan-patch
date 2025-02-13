@@ -11,21 +11,7 @@ on:
         required: true
 
 jobs:
-  check_release:
-    runs-on: ubuntu-latest
-    outputs:
-      version_number: ${{ steps.format_version.outputs.version }}
-    steps:
-      - name: Format version number
-        id: format_version
-        run: |
-          VERSION="${{ github.event.inputs.version }}"
-          # Remove 'v' prefix if present
-          VERSION="${VERSION#v}"
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-
   build:
-    needs: check_release
     runs-on: ${{ matrix.config.os }}
     strategy:
       matrix:
@@ -51,51 +37,21 @@ jobs:
             goos: "darwin"
             goarch: "arm64"
             suffix: "mac-arm64.dmg"
-          - os: windows-2019
-            kernel_path: "../app/kernel/SiYuan-Kernel.exe"
-            build_args: "-s -w -H=windowsgui -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
-            electron_args: "dist"
-            goos: "windows"
-            gobin: "bin"
-            mingwsys: "MINGW64"
-            goarch: "amd64"
-            suffix: "win.exe"
 
     steps:
-      - name: Check if asset exists
-        id: check_asset
-        run: |
-          # Function to check if asset exists in release
-          check_asset() {
-            local asset_name=$1
-            local response
-            response=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.event.inputs.version }}")
-            
-            if echo "$response" | grep -q "\"name\": \"$asset_name\""; then
-              return 0  # Asset exists
-            else
-              return 1  # Asset doesn't exist
-            fi
-          }
-
-          ASSET_NAME="siyuan-${{ github.event.inputs.version }}-${{ matrix.config.suffix }}"
-          if check_asset "$ASSET_NAME"; then
-            echo "Asset $ASSET_NAME already exists, skipping build"
-            echo "build=false" >> $GITHUB_OUTPUT
-            exit 0  # Exit successfully
-          else
-            echo "Asset $ASSET_NAME not found, proceeding with build"
-            echo "build=true" >> $GITHUB_OUTPUT
-          fi
-
       - uses: actions/checkout@v4
-        if: steps.should_build.outputs.build == 'true'
         with:
           path: siyuan-note
 
+      - name: Format version number
+        id: format_version
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          # Remove 'v' prefix if present
+          VERSION="${VERSION#v}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
       - name: clone origin and apply patches
-        if: steps.should_build.outputs.build == 'true'
         run: |
           mkdir -p ${{ github.workspace }}/go
           cd ${{ github.workspace }}/siyuan-note/
@@ -118,66 +74,31 @@ jobs:
           # Show status but don't fail if there are changes
           git status || true
 
-      - name: Set up MingGW
-        if: steps.should_build.outputs.build == 'true' && contains(matrix.config.goos, 'windows')
-        uses: msys2/setup-msys2@v2
-        with:
-          install: p7zip mingw-w64-x86_64-lua
-
-      - name: Set up TDM-GCC
-        if: steps.should_build.outputs.build == 'true' && contains(matrix.config.goarch, '386')
-        run: msys2 -c "bash siyuan-note/siyuan/scripts/get-tdm-gcc.sh tdm https://github.com/jmeubank/tdm-gcc/releases/download/v10.3.0-tdm-1/tdm-gcc-10.3.0.exe" && echo "CC=${{ github.workspace }}/tdm/bin/gcc.exe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        working-directory: ${{ github.workspace }}
-
       - name: Set up Go
-        if: steps.should_build.outputs.build == 'true'
         uses: actions/setup-go@v5
         with:
           go-version-file: ${{ github.workspace }}/siyuan-note/siyuan/kernel/go.mod
           cache-dependency-path: "**/*.sum"
-      
       - run: go version
-        if: steps.should_build.outputs.build == 'true'
-
-      - name: Set up goversioninfo
-        if: steps.should_build.outputs.build == 'true' && contains(matrix.config.goos, 'windows')
-        run: go get github.com/josephspurrier/goversioninfo/cmd/goversioninfo && go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo
-        working-directory: ${{ github.workspace }}/siyuan-note/siyuan/kernel
-        env:
-          GO111MODULE: on
-          CGO_ENABLED: 1
-          GOOS: ${{ matrix.config.goos }}
-          GOPATH: ${{ github.workspace }}/go
-          GOARCH: ${{ matrix.config.goarch }}
 
       - name: Set up Node
-        if: steps.should_build.outputs.build == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Install Node pnpm
-        if: steps.should_build.outputs.build == 'true'
         run: npm install -g ${{ github.event.inputs.packageManager }}
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan/app
 
       - name: Install Node Dependencies
-        if: steps.should_build.outputs.build == 'true'
         run: pnpm install --no-frozen-lockfile
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan/app
 
       - name: Building UI
-        if: steps.should_build.outputs.build == 'true'
         run: pnpm run build
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan/app
 
-      - name: Generate Icon Resource and Properties/Version Info For Windows
-        if: steps.should_build.outputs.build == 'true' && contains(matrix.config.goos, 'windows')
-        run: ${{ github.workspace }}\go\${{ matrix.config.gobin }}\goversioninfo -platform-specific=true -icon="resource\icon.ico" -manifest="resource\goversioninfo.exe.manifest"
-        working-directory: ${{ github.workspace }}/siyuan-note/siyuan/kernel
-
       - name: Building Kernel
-        if: steps.should_build.outputs.build == 'true'
         run: go build --tags fts5 -o "${{ matrix.config.kernel_path }}" -v -ldflags "${{ matrix.config.build_args }}"
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan/kernel
         env:
@@ -188,12 +109,11 @@ jobs:
           GOARCH: ${{ matrix.config.goarch }}
 
       - name: Building Electron
-        if: steps.should_build.outputs.build == 'true'
         run: pnpm run ${{ matrix.config.electron_args }}
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan/app
 
       - name: Create DEB Package
-        if: steps.should_build.outputs.build == 'true' && matrix.config.goos == 'linux'
+        if: matrix.config.goos == 'linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y fakeroot dpkg-dev imagemagick
@@ -226,7 +146,7 @@ jobs:
           # Create control file
           cat > siyuan-deb/DEBIAN/control << EOF
           Package: siyuan
-          Version: ${{ needs.check_release.outputs.version_number }}
+          Version: ${{ steps.format_version.outputs.version }}
           Section: office
           Priority: optional
           Architecture: amd64
@@ -241,7 +161,6 @@ jobs:
           mv siyuan-deb.deb siyuan-${{ github.event.inputs.version }}-amd64.deb
 
       - uses: joutvhu/get-release@v1
-        if: steps.should_build.outputs.build == 'true'
         id: get_current_release
         with:
           tag_name: ${{ github.event.inputs.version }}
@@ -249,7 +168,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Electron App
-        if: steps.should_build.outputs.build == 'true'
         uses: shogo82148/actions-upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -258,9 +176,10 @@ jobs:
           asset_name: siyuan-${{ github.event.inputs.version }}-${{ matrix.config.suffix }}
           asset_path: ${{ github.workspace }}/siyuan-note/siyuan/app/build/siyuan-*-${{ matrix.config.suffix }}
           asset_content_type: application/octet-stream
+          overwrite: true
 
       - name: Upload DEB Package
-        if: steps.should_build.outputs.build == 'true' && matrix.config.goos == 'linux'
+        if: matrix.config.goos == 'linux'
         uses: shogo82148/actions-upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -269,3 +188,4 @@ jobs:
           asset_name: siyuan-${{ github.event.inputs.version }}-amd64.deb
           asset_path: ${{ github.workspace }}/siyuan-${{ github.event.inputs.version }}-amd64.deb
           asset_content_type: application/vnd.debian.binary-package
+          overwrite: true
