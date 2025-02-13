@@ -1,51 +1,70 @@
-# [SiYuan Note](https://github.com/siyuan-note/siyuan)
+# SiYuan Note - Modified Version
 
-Just `Linux`, `Server - Docker` , `Mac` and `iOS` version are being built here. No `Android` or `Windows`. 
+This repository contains modified builds of [SiYuan Note](https://github.com/siyuan-note/siyuan), focusing on Linux, macOS, iOS, and Docker server deployments. Windows and Android builds are not supported.
 
-## Modified Features
+## Feature Modifications
 
-1. Local VIP features (official [`features`](https://b3log.org/siyuan/pricing.html)) including:
-    - `Third-party S3 data sync and backup`
-    - `Third-party WebDAV data sync and backup (excluding Nutstore)`
-    - `Search resource file content`
-    - `Add watermark to PDF/image exports`
-2. **Disabled** `automatic update package downloads`
-3. Google Analytics disabled by default
-4. Auto-upload of error reports and diagnostic data disabled by default
-5. Title bar display and VIP badge disabled by default
-6. *Enabled* by default: `Minimize to system tray when clicking close button`
+### Enhanced Functionality
+The modified version includes local access to premium features that typically require a VIP subscription in the official version. These features include:
 
-## How to Download Clients (Mac / Linux)
+- Support for third-party S3 storage for data synchronization and backup
+- WebDAV integration for data synchronization and backup (excluding Nutstore)
+- Full-text search capabilities for resource files
+- PDF and image export with watermark functionality
 
-1. Go to [Release page](https://github.com/MohamedElashri/siyuan-patch/releases)
+### Privacy and Performance Enhancements
+Several changes have been made to improve privacy and user experience:
 
-2. Download the version for your platform
+- Automatic update downloads are disabled
+- Google Analytics is disabled by default
+- Error reporting and diagnostic data collection are disabled
+- VIP badge and custom title bar displays are removed
+- System tray minimization is enabled by default when clicking the close button
 
-## Docker Image
+## Installation Guide
 
-<https://hub.docker.com/r/melashri/siyuan/tags>
+### Desktop Clients (macOS / Linux)
+1. Navigate to the [Releases page](https://github.com/MohamedElashri/siyuan-patch/releases)
+2. Download the appropriate version for your operating system
 
-## Latest Version Updates
+### Docker Deployment
+Container images are available on Docker Hub:
+```
+docker pull melashri/siyuan:latest
+```
+Browse available tags at [Docker Hub](https://hub.docker.com/r/melashri/siyuan/tags)
 
-For the latest version, please follow the "How to Build" tutorial to build it yourself.
+## Building from Source
 
-By default, it attempts to get and build the latest version every Tuesday and Friday at 20:00.
+### Automated Builds
+The repository automatically builds new versions every Tuesday and Friday at 20:00. For the most recent version, you can either:
+- Download from the latest release
+- Build from source following the instructions below
 
-## How to Build
+### Manual Build Instructions
 
-1. Fork this project to your own repository
-2. For building Electron clients (Mac/Linux), no environment variables needed
-3. For building Docker images:
-    1. Go to `https://hub.docker.com/settings/security`, click `New Access Token`, save the token
-    2. Go to your project's `settings`-`Secrets and variables`-`Actions`, click `New repository secret`
-    3. Add `DOCKER_HUB_USER` - your Docker account name
-    4. Add `DOCKER_HUB_PWD` - the saved token
+1. Fork this repository to your GitHub account
 
-4. Follow the operation shown in image, wait about 10 minutes then check the `Release` page
-*(If the latest version already exists, you can delete it from the `Release` page and click again)*
+2. Desktop Client Builds (macOS/Linux)
+   - No additional configuration required
+   - Proceed with the build workflow
 
-## Mac "SiYuan.app is damaged" Error
+3. Docker Image Builds
+   - Generate a Docker Hub access token at https://hub.docker.com/settings/security
+   - In your forked repository, navigate to Settings → Secrets and Variables → Actions
+   - Add the following repository secrets:
+     - `DOCKER_HUB_USER`: Your Docker Hub username
+     - `DOCKER_HUB_PWD`: Your Docker Hub access token
+   - Trigger the build workflow
+   - Build process takes approximately 10 minutes
 
-If you see "SiYuan.app is damaged and can't be opened" error:
+Note: If you need to rebuild an existing version, first delete it from the Releases page before triggering a new build.
 
-Download [Fix "damaged" error.zip](https://github.com/MohamedElashri/siyuan-patch/files/14783846/default.zip), unzip and run it, then reopen `SiYuan.app`
+## Troubleshooting
+
+### macOS Security Warning
+If you encounter the "SiYuan.app is damaged and can't be opened" error:
+
+1. Download the fix utility: [Fix "damaged" error.zip](https://github.com/MohamedElashri/siyuan-patch/files/14783846/default.zip)
+2. Extract and run the utility
+3. Launch SiYuan.app again
