@@ -158,8 +158,10 @@ jobs:
           Categories=Office;
           EOF
           
-          # Copy icon
-          cp ${{ github.workspace }}/siyuan-note/siyuan/app/electron/icons/512x512.png siyuan-deb/usr/share/icons/hicolor/512x512/apps/siyuan.png
+          # Download and convert icon
+          sudo apt-get install -y imagemagick
+          wget https://raw.githubusercontent.com/siyuan-note/siyuan/refs/heads/master/kernel/resource/icon.ico -O siyuan.ico
+          convert siyuan.ico[0] -resize 512x512 siyuan-deb/usr/share/icons/hicolor/512x512/apps/siyuan.png
           
           # Create control file
           cat > siyuan-deb/DEBIAN/control << EOF
