@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         config:
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             kernel_path: "../app/kernel-linux/SiYuan-Kernel"
             build_args: "-s -w -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
             electron_args: "dist-linux"
@@ -131,6 +131,53 @@ jobs:
         run: pnpm run ${{ matrix.config.electron_args }}
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan/app
 
+      - name: Create DEB Package
+        if: matrix.config.goos == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fakeroot dpkg-dev
+          
+          # Create directory structure for deb package
+          mkdir -p siyuan-deb/DEBIAN
+          mkdir -p siyuan-deb/usr/lib/siyuan
+          mkdir -p siyuan-deb/usr/share/applications
+          mkdir -p siyuan-deb/usr/share/icons/hicolor/512x512/apps
+          
+          # Copy application files
+          cp -r ${{ github.workspace }}/siyuan-note/siyuan/app/build/linux-unpacked/* siyuan-deb/usr/lib/siyuan/
+          
+          # Create desktop entry
+          cat > siyuan-deb/usr/share/applications/siyuan.desktop << EOF
+          [Desktop Entry]
+          Name=SiYuan
+          Comment=A personal knowledge management system
+          Exec=/usr/lib/siyuan/siyuan
+          Icon=siyuan
+          Terminal=false
+          Type=Application
+          Categories=Office;
+          EOF
+          
+          # Copy icon
+          cp ${{ github.workspace }}/siyuan-note/siyuan/app/electron/icons/512x512.png siyuan-deb/usr/share/icons/hicolor/512x512/apps/siyuan.png
+          
+          # Create control file
+          cat > siyuan-deb/DEBIAN/control << EOF
+          Package: siyuan
+          Version: ${{ github.event.inputs.version }}
+          Section: office
+          Priority: optional
+          Architecture: amd64
+          Maintainer: melashri <siyuan@elashri.com>
+          Description: SiYuan Note-Taking Software
+           SiYuan is a personal knowledge management system that supports 
+           building a personal knowledge base.
+          EOF
+          
+          # Build deb package
+          fakeroot dpkg-deb --build siyuan-deb
+          mv siyuan-deb.deb siyuan-${{ github.event.inputs.version }}-amd64.deb
+
       - uses: joutvhu/get-release@v1
         id: get_current_release
         with:
@@ -147,3 +194,14 @@ jobs:
           asset_name: siyuan-${{ github.event.inputs.version }}-${{ matrix.config.suffix }}
           asset_path: ${{ github.workspace }}/siyuan-note/siyuan/app/build/siyuan-*-${{ matrix.config.suffix }}
           asset_content_type: application/octet-stream
+
+      - name: Upload DEB Package
+        if: matrix.config.goos == 'linux'
+        uses: shogo82148/actions-upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_current_release.outputs.upload_url }}
+          asset_name: siyuan-${{ github.event.inputs.version }}-amd64.deb
+          asset_path: ${{ github.workspace }}/siyuan-${{ github.event.inputs.version }}-amd64.deb
+          asset_content_type: application/vnd.debian.binary-package
