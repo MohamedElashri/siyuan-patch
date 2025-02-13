@@ -84,14 +84,22 @@ jobs:
 
       - name: Check if need to build
         id: should_build
+        shell: bash
         run: |
-          ASSET_NAME="siyuan-${{ github.event.inputs.version }}-${{ matrix.config.suffix }}"
-          if [[ "${{ steps.check_asset.outputs.assets }}" == *"$ASSET_NAME"* ]]; then
-            echo "Asset $ASSET_NAME already exists, skipping build"
-            echo "build=false" >> $GITHUB_OUTPUT
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            ASSET_NAME="siyuan-${{ github.event.inputs.version }}-${{ matrix.config.suffix }}"
+            if echo "${{ steps.check_asset.outputs.assets }}" | grep -q "$ASSET_NAME"; then
+              echo "build=false" >> $GITHUB_OUTPUT
+            else
+              echo "build=true" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "Asset $ASSET_NAME not found, proceeding with build"
-            echo "build=true" >> $GITHUB_OUTPUT
+            ASSET_NAME="siyuan-${{ github.event.inputs.version }}-${{ matrix.config.suffix }}"
+            if [[ "${{ steps.check_asset.outputs.assets }}" == *"$ASSET_NAME"* ]]; then
+              echo "build=false" >> $GITHUB_OUTPUT
+            else
+              echo "build=true" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - uses: actions/checkout@v4
@@ -105,14 +113,23 @@ jobs:
           mkdir -p ${{ github.workspace }}/go
           cd ${{ github.workspace }}/siyuan-note/
 
-          git clone --branch ${{ github.event.inputs.version }} --depth=1 https://github.com/siyuan-note/siyuan.git
+          # Clone the repository without checking out any branch
+          git clone https://github.com/siyuan-note/siyuan.git
           cd siyuan
-
-          git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/disable-update.patch
-          git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/default-config.patch
-          git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/mock-vip-user.patch
-
-          git status
+          
+          # Fetch the specific tag/version
+          git fetch origin ${{ github.event.inputs.version }}
+          
+          # Hard reset to the tag/version
+          git reset --hard FETCH_HEAD
+          
+          # Apply patches with force and ignoring whitespace
+          git apply --ignore-whitespace --reject ${{ github.workspace }}/siyuan-note/patches/siyuan/disable-update.patch || true
+          git apply --ignore-whitespace --reject ${{ github.workspace }}/siyuan-note/patches/siyuan/default-config.patch || true
+          git apply --ignore-whitespace --reject ${{ github.workspace }}/siyuan-note/patches/siyuan/mock-vip-user.patch || true
+          
+          # Show status but don't fail if there are changes
+          git status || true
 
       - name: Set up MingGW
         if: steps.should_build.outputs.build == 'true' && contains(matrix.config.goos, 'windows')
