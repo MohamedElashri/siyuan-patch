@@ -1,4 +1,6 @@
-# SiYuan Patch - Local VIP for [SiYuan Note](https://github.com/siyuan-note/siyuan)
+# [SiYuan Note](https://github.com/siyuan-note/siyuan)
+
+Just `Linux`, `Server - Docker` , `Mac` and `iOS` version are being built here. No `Android` or `Windows`. 
 
 ## Modified Features
 
@@ -13,7 +15,7 @@
 5. Title bar display and VIP badge disabled by default
 6. *Enabled* by default: `Minimize to system tray when clicking close button`
 
-## How to Download Clients (Windows / Mac / Linux)
+## How to Download Clients (Mac / Linux)
 
 1. Go to [Release page](https://github.com/MohamedElashri/siyuan-patch/releases)
 
@@ -32,7 +34,7 @@ By default, it attempts to get and build the latest version every Tuesday and Fr
 ## How to Build
 
 1. Fork this project to your own repository
-2. For building Electron clients (Windows/Mac/Linux), no environment variables needed
+2. For building Electron clients (Mac/Linux), no environment variables needed
 3. For building Docker images:
     1. Go to `https://hub.docker.com/settings/security`, click `New Access Token`, save the token
     2. Go to your project's `settings`-`Secrets and variables`-`Actions`, click `New repository secret`
