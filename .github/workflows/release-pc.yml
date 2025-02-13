@@ -14,7 +14,6 @@ jobs:
   check_release:
     runs-on: ubuntu-latest
     outputs:
-      should_build: ${{ steps.check.outputs.should_build }}
       version_number: ${{ steps.format_version.outputs.version }}
     steps:
       - name: Format version number
@@ -25,18 +24,8 @@ jobs:
           VERSION="${VERSION#v}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Check if release assets exist
-        id: check
-        uses: joutvhu/get-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.event.inputs.version }}
-        continue-on-error: true
-
   build:
     needs: check_release
-    if: needs.check_release.outputs.should_build != 'false'
     runs-on: ${{ matrix.config.os }}
     strategy:
       matrix:
@@ -75,31 +64,29 @@ jobs:
     steps:
       - name: Check if asset exists
         id: check_asset
-        uses: joutvhu/get-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.event.inputs.version }}
-        continue-on-error: true
-
-      - name: Check if need to build
-        id: should_build
-        shell: bash
         run: |
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            ASSET_NAME="siyuan-${{ github.event.inputs.version }}-${{ matrix.config.suffix }}"
-            if echo "${{ steps.check_asset.outputs.assets }}" | grep -q "$ASSET_NAME"; then
-              echo "build=false" >> $GITHUB_OUTPUT
+          # Function to check if asset exists in release
+          check_asset() {
+            local asset_name=$1
+            local response
+            response=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.event.inputs.version }}")
+            
+            if echo "$response" | grep -q "\"name\": \"$asset_name\""; then
+              return 0  # Asset exists
             else
-              echo "build=true" >> $GITHUB_OUTPUT
+              return 1  # Asset doesn't exist
             fi
+          }
+
+          ASSET_NAME="siyuan-${{ github.event.inputs.version }}-${{ matrix.config.suffix }}"
+          if check_asset "$ASSET_NAME"; then
+            echo "Asset $ASSET_NAME already exists, skipping build"
+            echo "build=false" >> $GITHUB_OUTPUT
+            exit 0  # Exit successfully
           else
-            ASSET_NAME="siyuan-${{ github.event.inputs.version }}-${{ matrix.config.suffix }}"
-            if [[ "${{ steps.check_asset.outputs.assets }}" == *"$ASSET_NAME"* ]]; then
-              echo "build=false" >> $GITHUB_OUTPUT
-            else
-              echo "build=true" >> $GITHUB_OUTPUT
-            fi
+            echo "Asset $ASSET_NAME not found, proceeding with build"
+            echo "build=true" >> $GITHUB_OUTPUT
           fi
 
       - uses: actions/checkout@v4
