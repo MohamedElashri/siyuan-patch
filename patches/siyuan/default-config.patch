@@ -49,7 +49,7 @@ index ebd1002acf907e4afb3524fe5adcf672a850646b..1df2f4761587468cadf8f6d435738367
  		CodeBlockThemeDark:  "base16/dracula",
 -		Lang:                "en_US",
 -		CloseButtonBehavior: 0,
-+		Lang:                "zh_CN",
++		Lang:                "en_US",
 +		CloseButtonBehavior: 1,
  		HideStatusBar:       false,
  	}
