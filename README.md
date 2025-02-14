@@ -60,11 +60,17 @@ The repository automatically builds new versions every Tuesday and Friday at 20:
 
 Note: If you need to rebuild an existing version, first delete it from the Releases page before triggering a new build.
 
+
 ## Troubleshooting
 
 ### macOS Security Warning
 If you encounter the "SiYuan.app is damaged and can't be opened" error:
 
-1. Download the fix utility: [Fix "damaged" error.zip](https://github.com/MohamedElashri/siyuan-patch/releases/download/v3.1.21/fix_utility.zip)
-2. Extract and run the utility
-3. Launch SiYuan.app again
+1. Download and run the fix script:
+   ```bash
+   curl -sSL https://raw.githubusercontent.com/MohamedElashri/siyuan-patch/refs/heads/main/fix_mac.sh | bash
+   ```
+2. Enter your password when prompted (it won’t be visible while typing).
+3. Launch SiYuan.app again.
+
+This will remove the macOS quarantine flag, allowing SiYuan to run normally.
