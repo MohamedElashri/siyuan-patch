@@ -65,6 +65,6 @@ Note: If you need to rebuild an existing version, first delete it from the Relea
 ### macOS Security Warning
 If you encounter the "SiYuan.app is damaged and can't be opened" error:
 
-1. Download the fix utility: [Fix "damaged" error.zip](https://github.com/MohamedElashri/siyuan-patch/files/14783846/default.zip)
+1. Download the fix utility: [Fix "damaged" error.zip](https://github.com/MohamedElashri/siyuan-patch/releases/download/v3.1.21/fix_utility.zip)
 2. Extract and run the utility
 3. Launch SiYuan.app again
