@@ -6,7 +6,6 @@ index e3acc95435abc18c6334be12637bdc48a7ea9762..7ffafaa1f254994248532bb555941cac
  		Name:               util.GetDeviceName(),
  		KernelVersion:      util.Ver,
  		NetworkProxy:       &NetworkProxy{},
-+		DisableGoogleAnalytics: true,
  		DownloadInstallPkg: false,
  	}
  }
