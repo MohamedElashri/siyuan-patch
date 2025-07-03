@@ -27,6 +27,7 @@ jobs:
 
       - name: clone origin and apply patches
         run: |
+          git config --global core.autocrlf false
           mkdir -p ${{ github.workspace }}/go
           cd ${{ github.workspace }}/siyuan-note/
 
