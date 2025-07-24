@@ -52,13 +52,26 @@ jobs:
         with:
           path: siyuan-note
 
-      - name: Format version number
-        id: format_version
+      - name: Format version number (Unix)
+        id: format_version_unix
+        if: runner.os != 'Windows'
         run: |
           VERSION="${{ github.event.inputs.version }}"
           # Remove 'v' prefix if present
           VERSION="${VERSION#v}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Format version number (Windows)
+        id: format_version_windows
+        if: runner.os == 'Windows'
+        run: |
+          $VERSION = "${{ github.event.inputs.version }}"
+          # Remove 'v' prefix if present
+          if ($VERSION.StartsWith("v")) {
+            $VERSION = $VERSION.Substring(1)
+          }
+          "version=$VERSION" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        shell: pwsh
 
       - name: clone origin and apply patches
         run: |
@@ -182,7 +195,7 @@ jobs:
           # Create control file
           cat > siyuan-deb/DEBIAN/control << EOF
           Package: siyuan
-          Version: ${{ steps.format_version.outputs.version }}
+          Version: ${{ steps.format_version_unix.outputs.version || steps.format_version_windows.outputs.version }}
           Section: office
           Priority: optional
           Architecture: amd64
