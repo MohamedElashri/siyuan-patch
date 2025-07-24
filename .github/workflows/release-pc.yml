@@ -37,6 +37,15 @@ jobs:
             goos: "darwin"
             goarch: "arm64"
             suffix: "mac-arm64.dmg"
+          - os: windows-latest
+            kernel_path: "../app/kernel/SiYuan-Kernel.exe"
+            build_args: "-s -w -H=windowsgui -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
+            electron_args: "dist"
+            goos: "windows"
+            gobin: "bin"
+            mingwsys: "MINGW64"
+            goarch: "amd64"
+            suffix: "win.exe"
 
     steps:
       - uses: actions/checkout@v4
@@ -74,12 +83,34 @@ jobs:
           # Show status but don't fail if there are changes
           git status || true
 
+      - name: Set up MingGW
+        uses: msys2/setup-msys2@v2
+        if: contains( matrix.config.goos, 'windows')
+        with:
+          install: p7zip mingw-w64-x86_64-lua
+
+      - name: Set up TDM-GCC
+        run: msys2 -c "bash siyuan-note/siyuan/scripts/get-tdm-gcc.sh tdm https://github.com/jmeubank/tdm-gcc/releases/download/v10.3.0-tdm-1/tdm-gcc-10.3.0.exe" && echo "CC=${{ github.workspace }}/tdm/bin/gcc.exe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        if: contains( matrix.config.goarch, '386')
+        working-directory: ${{ github.workspace }}
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version-file: ${{ github.workspace }}/siyuan-note/siyuan/kernel/go.mod
           cache-dependency-path: "**/*.sum"
       - run: go version
+
+      - name: Set up goversioninfo
+        run: go get github.com/josephspurrier/goversioninfo/cmd/goversioninfo && go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo
+        if: contains( matrix.config.goos, 'windows')
+        working-directory: ${{ github.workspace }}/siyuan-note/siyuan/kernel
+        env:
+          GO111MODULE: on
+          CGO_ENABLED: 1
+          GOOS: ${{ matrix.config.goos }}
+          GOPATH: ${{ github.workspace }}/go
+          GOARCH: ${{ matrix.config.goarch }}
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -97,6 +128,11 @@ jobs:
       - name: Building UI
         run: pnpm run build
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan/app
+
+      - name: Generate Icon Resource and Properties/Version Info For Windows
+        run: ${{ github.workspace }}\go\${{ matrix.config.gobin }}\goversioninfo -platform-specific=true -icon="resource\icon.ico" -manifest="resource\goversioninfo.exe.manifest"
+        if: contains( matrix.config.goos, 'windows')
+        working-directory: ${{ github.workspace }}/siyuan-note/siyuan/kernel
 
       - name: Building Kernel
         run: go build --tags fts5 -o "${{ matrix.config.kernel_path }}" -v -ldflags "${{ matrix.config.build_args }}"
