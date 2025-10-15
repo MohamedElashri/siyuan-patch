@@ -1,4 +1,4 @@
-name: Update APT Repository (URL-based)
+name: Update APT Repository
 
 on:
   workflow_dispatch:
@@ -26,29 +26,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Clean old metadata
           rm -f Packages Packages.gz Release
 
-          # Fetch up to 50 releases
+          # Fetch releases and output tab-separated: tag, name, size
           curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-            "https://api.github.com/repos/MohamedElashri/siyuan-patch/releases?per_page=50" \
-            | jq -r '
-              .[] |
-              select(.assets | map(.name) | any(endswith(".deb"))) |
-              .tag_name as $tag |
-              .assets[] |
-              select(.name | endswith(".deb")) |
-              {
-                url: "https://github.com/MohamedElashri/siyuan-patch/releases/download/\($tag)/\(.name)",
-                name: .name,
-                size: .size
-              }
-            ' | while IFS= read -r pkg; do
-              url=$(echo "$pkg" | jq -r '.url')
-              name=$(echo "$pkg" | jq -r '.name')
-              size=$(echo "$pkg" | jq -r '.size')
+            "https://api.github.com/repos/MohamedElashri/siyuan-patch/releases?per_page=50" | \
+            jq -r '
+              .[] | select(.assets | map(.name) | any(endswith(".deb"))) | .tag_name as $tag |
+              .assets[] | select(.name | endswith(".deb")) |
+              "\($tag)\t\(.name)\t\(.size)"
+            ' | while IFS=$'\t' read -r tag name size; do
+              url="https://github.com/MohamedElashri/siyuan-patch/releases/download/$tag/$name"
 
-              # Extract version: siyuan-v3.3.5-amd64.deb → 3.3.5
               if [[ "$name" =~ siyuan-v?([0-9]+\.[0-9]+\.[0-9]+)-amd64\.deb ]]; then
                 version="${BASH_REMATCH[1]}"
               else
@@ -58,14 +47,11 @@ jobs:
 
               echo "Processing $name (v$version)"
 
-              # Download .deb temporarily
               wget -q "$url" -O "/tmp/$name"
 
-              # Compute checksums
               md5=$(md5sum "/tmp/$name" | cut -d' ' -f1)
               sha256=$(sha256sum "/tmp/$name" | cut -d' ' -f1)
 
-              # Append to Packages
               {
                 echo "Package: siyuan"
                 echo "Version: $version"
@@ -87,10 +73,8 @@ jobs:
               rm -f "/tmp/$name"
             done
 
-          # Compress Packages
           gzip -c Packages > Packages.gz
 
-          # Generate Release file using printf (avoids EOF issues)
           printf '%s\n' \
             "Origin: Mohamed Elashri" \
             "Label: SiYuan Patched Builds" \
@@ -102,7 +86,6 @@ jobs:
             "Date: $(date -R)" \
             > Release
 
-          # Append MD5 checksums of Packages files
           {
             md5_packages=$(md5sum Packages | cut -d' ' -f1)
             size_packages=$(wc -c < Packages)
