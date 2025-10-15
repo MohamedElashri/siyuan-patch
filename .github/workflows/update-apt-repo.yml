@@ -1,10 +1,9 @@
-name: Update APT Repository
+name: Update APT Repository (Last 4 Releases)
 
 on:
   workflow_dispatch:
-  # Optional: auto-update weekly
   # schedule:
-  #   - cron: '0 3 * * 1'  # Every Monday at 3 AM UTC
+  #   - cron: '0 3 * * 1' # optional weekly schedule
 
 jobs:
   update-apt:
@@ -22,39 +21,56 @@ jobs:
       - name: Install tools
         run: sudo apt-get update && sudo apt-get install -y wget jq
 
-      - name: Prepare folders and clean old files
+      - name: Clean old metadata and packages
         run: |
-          rm -rf dists/
-          mkdir -p dists/siyuan/main/binary-amd64
+          rm -rf dists/ pool/
+          mkdir -p dists/siyuan/main/binary-amd64 pool
 
-      - name: Fetch releases and generate Packages
+      - name: Fetch releases and save debs locally
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tmp_dir="$(mktemp -d)"
-          curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-            "https://api.github.com/repos/MohamedElashri/siyuan-patch/releases?per_page=50" | \
-            jq -r '
-              .[] | select(.assets | map(.name) | any(endswith(".deb"))) | .tag_name as $tag |
-              .assets[] | select(.name | endswith(".deb")) |
-              "\($tag)\t\(.name)\t\(.size)"
-            ' | while IFS=$'\t' read -r tag name size; do
+
+          # Get last 4 releases sorted by creation date descending
+          releases=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/MohamedElashri/siyuan-patch/releases?per_page=10" | \
+            jq -r '.[] | {tag_name, created_at, assets} | sort_by(.created_at) | reverse | .[0:4][] | @base64')
+
+          # Clear Packages file
+          : > dists/siyuan/main/binary-amd64/Packages
+
+          echo "$releases" | while IFS= read -r release_encoded; do
+            release_json=$(echo "$release_encoded" | base64 --decode)
+
+            tag=$(echo "$release_json" | jq -r '.tag_name')
+            assets=$(echo "$release_json" | jq -c '.assets')
+
+            echo "Processing release $tag"
+
+            # Process only .deb assets
+            echo "$assets" | jq -c '.[] | select(.name | endswith(".deb"))' | while IFS= read -r asset; do
+              name=$(echo "$asset" | jq -r '.name')
+              size=$(echo "$asset" | jq -r '.size')
               url="https://github.com/MohamedElashri/siyuan-patch/releases/download/$tag/$name"
 
+              # Download .deb into pool directory
+              echo "Downloading $name"
+              wget -q "$url" -O "pool/$name"
+
+              # Extract version from filename
               if [[ "$name" =~ siyuan-v?([0-9]+\.[0-9]+\.[0-9]+)-amd64\.deb ]]; then
                 version="${BASH_REMATCH[1]}"
               else
-                echo "Skipping: cannot parse version from $name"
+                echo "Skipping $name: cannot parse version"
                 continue
               fi
 
-              echo "Processing $name (v$version)"
+              # Calculate checksums
+              md5=$(md5sum "pool/$name" | cut -d' ' -f1)
+              sha256=$(sha256sum "pool/$name" | cut -d' ' -f1)
 
-              wget -q "$url" -O "$tmp_dir/$name"
-
-              md5=$(md5sum "$tmp_dir/$name" | cut -d' ' -f1)
-              sha256=$(sha256sum "$tmp_dir/$name" | cut -d' ' -f1)
-
+              # Append package entry with relative Filename path
               {
                 echo "Package: siyuan"
                 echo "Version: $version"
@@ -66,19 +82,18 @@ jobs:
                 echo "Homepage: https://github.com/MohamedElashri/siyuan-patch"
                 echo "Description: Patched SiYuan for Ubuntu/Pop!_OS"
                 echo " SiYuan is a privacy-first personal knowledge management system."
-                echo "Filename: $url"
+                echo "Filename: pool/$name"
                 echo "Size: $size"
                 echo "MD5sum: $md5"
                 echo "SHA256: $sha256"
                 echo ""
               } >> dists/siyuan/main/binary-amd64/Packages
-
-              rm -f "$tmp_dir/$name"
             done
+          done
 
           gzip -c dists/siyuan/main/binary-amd64/Packages > dists/siyuan/main/binary-amd64/Packages.gz
 
-          # Generate Release file with Date and basic fields
+          # Generate Release file
           printf '%s\n' \
             "Origin: Mohamed Elashri" \
             "Label: SiYuan Patched Builds" \
@@ -90,7 +105,7 @@ jobs:
             "Date: $(date -R)" \
             > dists/siyuan/Release
 
-          # Append checksums: MD5, SHA256, and SHA1
+          # Append MD5, SHA256 and SHA1 checksums
           md5_packages=$(md5sum dists/siyuan/main/binary-amd64/Packages | cut -d' ' -f1)
           size_packages=$(wc -c < dists/siyuan/main/binary-amd64/Packages)
           md5_gz=$(md5sum dists/siyuan/main/binary-amd64/Packages.gz | cut -d' ' -f1)
@@ -105,23 +120,22 @@ jobs:
           printf 'MD5Sum:\n %s %d main/binary-amd64/Packages\n %s %d main/binary-amd64/Packages.gz\n' \
             "$md5_packages" "$size_packages" \
             "$md5_gz" "$size_gz" >> dists/siyuan/Release
-          
+
           printf 'SHA256:\n %s %d main/binary-amd64/Packages\n %s %d main/binary-amd64/Packages.gz\n' \
             "$sha256_packages" "$size_packages" \
             "$sha256_gz" "$size_gz" >> dists/siyuan/Release
-          
+
           printf 'SHA1:\n %s %d main/binary-amd64/Packages\n %s %d main/binary-amd64/Packages.gz\n' \
             "$sha1_packages" "$size_packages" \
             "$sha1_gz" "$size_gz" >> dists/siyuan/Release
-          
+
       - name: Ensure .nojekyll for raw files
-        run: |
-          touch .nojekyll
+        run: touch .nojekyll
 
       - name: Commit and push
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add dists/siyuan/main/binary-amd64/Packages dists/siyuan/main/binary-amd64/Packages.gz dists/siyuan/Release .nojekyll
+          git add dists/siyuan/main/binary-amd64/Packages dists/siyuan/main/binary-amd64/Packages.gz dists/siyuan/Release pool .nojekyll
           git commit -m "Update APT repo $(date -I)" || echo "No changes to commit"
           git push
