@@ -1,15 +1,16 @@
-# .github/workflows/update-apt-repo.yml
 name: Update APT Repository (URL-based)
 
 on:
   workflow_dispatch:
-  # Optional: run weekly to catch new releases
+  # Optional: auto-update weekly
   # schedule:
-  #   - cron: '0 3 * * 1'
+  #   - cron: '0 3 * * 1'  # Every Monday at 3 AM UTC
 
 jobs:
   update-apt:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Needed to push to gh-pages
     steps:
       - name: Checkout gh-pages
         uses: actions/checkout@v4
@@ -21,14 +22,14 @@ jobs:
       - name: Install tools
         run: sudo apt-get update && sudo apt-get install -y wget jq
 
-      - name: Fetch release metadata and generate Packages
+      - name: Fetch releases and generate Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Clear old metadata
+          # Clean old metadata
           rm -f Packages Packages.gz Release
 
-          # Fetch releases with .deb assets
+          # Fetch up to 50 releases
           curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
             "https://api.github.com/repos/MohamedElashri/siyuan-patch/releases?per_page=50" \
             | jq -r '
@@ -40,45 +41,48 @@ jobs:
               {
                 url: "https://github.com/MohamedElashri/siyuan-patch/releases/download/\($tag)/\(.name)",
                 name: .name,
-                size: .size,
-                tag: $tag
+                size: .size
               }
             ' | while IFS= read -r pkg; do
               url=$(echo "$pkg" | jq -r '.url')
               name=$(echo "$pkg" | jq -r '.name')
               size=$(echo "$pkg" | jq -r '.size')
-              tag=$(echo "$pkg" | jq -r '.tag')
 
-              # Extract version from filename: siyuan-v3.3.5-amd64.deb → 3.3.5
-              version=$(echo "$name" | sed -E 's/siyuan-v?([0-9]+\.[0-9]+\.[0-9]+)-amd64\.deb/\1/')
+              # Extract version: siyuan-v3.3.5-amd64.deb → 3.3.5
+              if [[ "$name" =~ siyuan-v?([0-9]+\.[0-9]+\.[0-9]+)-amd64\.deb ]]; then
+                version="${BASH_REMATCH[1]}"
+              else
+                echo "Skipping: cannot parse version from $name"
+                continue
+              fi
 
               echo "Processing $name (v$version)"
 
-              # Download .deb to inspect control info (needed for MD5/SHA256)
+              # Download .deb temporarily
               wget -q "$url" -O "/tmp/$name"
 
-              # Extract control info
+              # Compute checksums
               md5=$(md5sum "/tmp/$name" | cut -d' ' -f1)
               sha256=$(sha256sum "/tmp/$name" | cut -d' ' -f1)
 
-              # Write Packages entry
-              cat >> Packages <<EOF
-              Package: siyuan
-              Version: $version
-              Architecture: amd64
-              Maintainer: Mohamed Elashri <siyuan@elashri.com>
-              Installed-Size: 102400
-              Section: office
-              Priority: optional
-              Homepage: https://github.com/MohamedElashri/siyuan-patch
-              Description: Patched SiYuan for Ubuntu/Pop!_OS
-               SiYuan is a privacy-first personal knowledge management system.
-              Filename: $url
-              Size: $size
-              MD5sum: $md5
-              SHA256: $sha256
-              
-              EOF
+              # Append to Packages
+              {
+                echo "Package: siyuan"
+                echo "Version: $version"
+                echo "Architecture: amd64"
+                echo "Maintainer: Mohamed Elashri <siyuan@elashri.com>"
+                echo "Installed-Size: 102400"
+                echo "Section: office"
+                echo "Priority: optional"
+                echo "Homepage: https://github.com/MohamedElashri/siyuan-patch"
+                echo "Description: Patched SiYuan for Ubuntu/Pop!_OS"
+                echo " SiYuan is a privacy-first personal knowledge management system."
+                echo "Filename: $url"
+                echo "Size: $size"
+                echo "MD5sum: $md5"
+                echo "SHA256: $sha256"
+                echo ""
+              } >> Packages
 
               rm -f "/tmp/$name"
             done
@@ -86,27 +90,33 @@ jobs:
           # Compress Packages
           gzip -c Packages > Packages.gz
 
-          # Generate Release
-          cat > Release <<'EOF'
-          Origin: Mohamed Elashri
-          Label: SiYuan Patched Builds
-          Suite: stable
-          Codename: siyuan
-          Architectures: amd64
-          Components: main
-          Description: Community-patched SiYuan for Ubuntu/Pop!_OS
-          Date: $(date -R)
-          MD5Sum:
-          EOF
+          # Generate Release file using printf (avoids EOF issues)
+          printf '%s\n' \
+            "Origin: Mohamed Elashri" \
+            "Label: SiYuan Patched Builds" \
+            "Suite: stable" \
+            "Codename: siyuan" \
+            "Architectures: amd64" \
+            "Components: main" \
+            "Description: Community-patched SiYuan for Ubuntu/Pop!_OS" \
+            "Date: $(date -R)" \
+            > Release
 
-          # Append MD5 of Packages and Packages.gz
-          printf " $(md5sum Packages | cut -d" " -f1) $(wc -c < Packages) Packages\n" >> Release
-          printf " $(md5sum Packages.gz | cut -d" " -f1) $(wc -c < Packages.gz) Packages.gz\n" >> Release
+          # Append MD5 checksums of Packages files
+          {
+            md5_packages=$(md5sum Packages | cut -d' ' -f1)
+            size_packages=$(wc -c < Packages)
+            md5_gz=$(md5sum Packages.gz | cut -d' ' -f1)
+            size_gz=$(wc -c < Packages.gz)
+            printf "MD5Sum:\n %s %d Packages\n %s %d Packages.gz\n" \
+              "$md5_packages" "$size_packages" \
+              "$md5_gz" "$size_gz"
+          } >> Release
 
       - name: Commit and push
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add Packages Packages.gz Release
-          git commit -m "Update APT repo $(date -I)" || echo "No changes"
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update APT repo $(date -I)"
           git push
