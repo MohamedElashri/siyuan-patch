@@ -1,9 +1,11 @@
-name: Update APT Repository (Auto)
+# .github/workflows/update-apt-repo.yml
+name: Update APT Repository (URL-based)
 
 on:
   workflow_dispatch:
+  # Optional: run weekly to catch new releases
   # schedule:
-  #   - cron: '0 2 * * 1'  # Optional: run weekly
+  #   - cron: '0 3 * * 1'
 
 jobs:
   update-apt:
@@ -17,57 +19,94 @@ jobs:
           fetch-depth: 0
 
       - name: Install tools
-        run: sudo apt-get update && sudo apt-get install -y wget dpkg-dev jq
+        run: sudo apt-get update && sudo apt-get install -y wget jq
 
-      - name: Fetch all releases with .deb assets
+      - name: Fetch release metadata and generate Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mkdir -p pool/main/s/siyuan
+          # Clear old metadata
+          rm -f Packages Packages.gz Release
 
+          # Fetch releases with .deb assets
           curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-            "https://api.github.com/repos/MohamedElashri/siyuan-patch/releases?per_page=100" \
+            "https://api.github.com/repos/MohamedElashri/siyuan-patch/releases?per_page=50" \
             | jq -r '
               .[] |
               select(.assets | map(.name) | any(endswith(".deb"))) |
               .tag_name as $tag |
               .assets[] |
               select(.name | endswith(".deb")) |
-              "https://github.com/MohamedElashri/siyuan-patch/releases/download/\($tag)/\(.name)"
-            ' | while IFS= read -r url; do
-              filename=$(basename "$url")
-              echo "Downloading $filename"
-              wget -O "pool/main/s/siyuan/$filename" "$url"
+              {
+                url: "https://github.com/MohamedElashri/siyuan-patch/releases/download/\($tag)/\(.name)",
+                name: .name,
+                size: .size,
+                tag: $tag
+              }
+            ' | while IFS= read -r pkg; do
+              url=$(echo "$pkg" | jq -r '.url')
+              name=$(echo "$pkg" | jq -r '.name')
+              size=$(echo "$pkg" | jq -r '.size')
+              tag=$(echo "$pkg" | jq -r '.tag')
+
+              # Extract version from filename: siyuan-v3.3.5-amd64.deb → 3.3.5
+              version=$(echo "$name" | sed -E 's/siyuan-v?([0-9]+\.[0-9]+\.[0-9]+)-amd64\.deb/\1/')
+
+              echo "Processing $name (v$version)"
+
+              # Download .deb to inspect control info (needed for MD5/SHA256)
+              wget -q "$url" -O "/tmp/$name"
+
+              # Extract control info
+              md5=$(md5sum "/tmp/$name" | cut -d' ' -f1)
+              sha256=$(sha256sum "/tmp/$name" | cut -d' ' -f1)
+
+              # Write Packages entry
+              cat >> Packages <<EOF
+              Package: siyuan
+              Version: $version
+              Architecture: amd64
+              Maintainer: Mohamed Elashri <siyuan@elashri.com>
+              Installed-Size: 102400
+              Section: office
+              Priority: optional
+              Homepage: https://github.com/MohamedElashri/siyuan-patch
+              Description: Patched SiYuan for Ubuntu/Pop!_OS
+               SiYuan is a privacy-first personal knowledge management system.
+              Filename: $url
+              Size: $size
+              MD5sum: $md5
+              SHA256: $sha256
+              
+              EOF
+
+              rm -f "/tmp/$name"
             done
 
-      - name: Generate Packages.gz
-        run: |
-          cd pool/main/s
-          dpkg-scanpackages siyuan /dev/null | gzip -9c > ../../../Packages.gz
+          # Compress Packages
+          gzip -c Packages > Packages.gz
 
-      - name: Generate Release file
-        run: |
+          # Generate Release
           cat > Release <<'EOF'
-            Origin: Mohamed Elashri
-            Label: SiYuan Patched Builds
-            Suite: stable
-            Codename: siyuan
-            
-            Architectures: amd64
-            Components: main
-            Description: Community-patched SiYuan for Ubuntu/Pop!_OS
-            Date: $(date -R)
-            EOF
-            
+          Origin: Mohamed Elashri
+          Label: SiYuan Patched Builds
+          Suite: stable
+          Codename: siyuan
+          Architectures: amd64
+          Components: main
+          Description: Community-patched SiYuan for Ubuntu/Pop!_OS
+          Date: $(date -R)
+          MD5Sum:
+          EOF
+
+          # Append MD5 of Packages and Packages.gz
+          printf " $(md5sum Packages | cut -d" " -f1) $(wc -c < Packages) Packages\n" >> Release
+          printf " $(md5sum Packages.gz | cut -d" " -f1) $(wc -c < Packages.gz) Packages.gz\n" >> Release
+
       - name: Commit and push
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add .
-          git commit -m "Auto-update APT repo $(date -I)" || echo "No changes to commit"
+          git add Packages Packages.gz Release
+          git commit -m "Update APT repo $(date -I)" || echo "No changes"
           git push
-
-
-
-
-
