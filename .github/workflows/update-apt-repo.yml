@@ -10,7 +10,7 @@ jobs:
   update-apt:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Needed to push to gh-pages
+      contents: write
     steps:
       - name: Checkout gh-pages
         uses: actions/checkout@v4
@@ -22,12 +22,17 @@ jobs:
       - name: Install tools
         run: sudo apt-get update && sudo apt-get install -y wget jq
 
+      - name: Prepare folders and clean old files
+        run: |
+          # Remove old metadata and ensure Debian dirs
+          rm -rf dists/
+          mkdir -p dists/siyuan/main/binary-amd64
+
       - name: Fetch releases and generate Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          rm -f Packages Packages.gz Release
-
+          tmp_dir="$(mktemp -d)"
           # Fetch releases and output tab-separated: tag, name, size
           curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
             "https://api.github.com/repos/MohamedElashri/siyuan-patch/releases?per_page=50" | \
@@ -47,10 +52,10 @@ jobs:
 
               echo "Processing $name (v$version)"
 
-              wget -q "$url" -O "/tmp/$name"
+              wget -q "$url" -O "$tmp_dir/$name"
 
-              md5=$(md5sum "/tmp/$name" | cut -d' ' -f1)
-              sha256=$(sha256sum "/tmp/$name" | cut -d' ' -f1)
+              md5=$(md5sum "$tmp_dir/$name" | cut -d' ' -f1)
+              sha256=$(sha256sum "$tmp_dir/$name" | cut -d' ' -f1)
 
               {
                 echo "Package: siyuan"
@@ -68,13 +73,14 @@ jobs:
                 echo "MD5sum: $md5"
                 echo "SHA256: $sha256"
                 echo ""
-              } >> Packages
+              } >> dists/siyuan/main/binary-amd64/Packages
 
-              rm -f "/tmp/$name"
+              rm -f "$tmp_dir/$name"
             done
 
-          gzip -c Packages > Packages.gz
+          gzip -c dists/siyuan/main/binary-amd64/Packages > dists/siyuan/main/binary-amd64/Packages.gz
 
+          # Generate Release file
           printf '%s\n' \
             "Origin: Mohamed Elashri" \
             "Label: SiYuan Patched Builds" \
@@ -84,22 +90,27 @@ jobs:
             "Components: main" \
             "Description: Community-patched SiYuan for Ubuntu/Pop!_OS" \
             "Date: $(date -R)" \
-            > Release
+            > dists/siyuan/Release
 
+          # Append checksums
           {
-            md5_packages=$(md5sum Packages | cut -d' ' -f1)
-            size_packages=$(wc -c < Packages)
-            md5_gz=$(md5sum Packages.gz | cut -d' ' -f1)
-            size_gz=$(wc -c < Packages.gz)
-            printf "MD5Sum:\n %s %d Packages\n %s %d Packages.gz\n" \
+            md5_packages=$(md5sum dists/siyuan/main/binary-amd64/Packages | cut -d' ' -f1)
+            size_packages=$(wc -c < dists/siyuan/main/binary-amd64/Packages)
+            md5_gz=$(md5sum dists/siyuan/main/binary-amd64/Packages.gz | cut -d' ' -f1)
+            size_gz=$(wc -c < dists/siyuan/main/binary-amd64/Packages.gz)
+            printf "MD5Sum:\n %s %d main/binary-amd64/Packages\n %s %d main/binary-amd64/Packages.gz\n" \
               "$md5_packages" "$size_packages" \
               "$md5_gz" "$size_gz"
-          } >> Release
+          } >> dists/siyuan/Release
+
+      - name: Ensure .nojekyll for raw files
+        run: |
+          touch .nojekyll
 
       - name: Commit and push
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add Packages Packages.gz Release
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update APT repo $(date -I)"
+          git add dists/siyuan/main/binary-amd64/Packages dists/siyuan/main/binary-amd64/Packages.gz dists/siyuan/Release .nojekyll
+          git commit -m "Update APT repo $(date -I)" || echo "No changes to commit"
           git push
