@@ -2,10 +2,8 @@ name: Update APT Repository (Auto)
 
 on:
   workflow_dispatch:
-  # Optional: schedule daily/weekly
   # schedule:
-  #   - cron: '0 2 * * 1'  # Every Monday at 2 AM UTC
-
+  #   - cron: '0 2 * * 1'  # Optional: run weekly
 
 jobs:
   update-apt:
@@ -27,7 +25,6 @@ jobs:
         run: |
           mkdir -p pool/main/s/siyuan
 
-          # Get all releases and filter those with .deb assets
           curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
             "https://api.github.com/repos/MohamedElashri/siyuan-patch/releases?per_page=100" \
             | jq -r '
@@ -37,7 +34,7 @@ jobs:
               .assets[] |
               select(.name | endswith(".deb")) |
               "https://github.com/MohamedElashri/siyuan-patch/releases/download/\($tag)/\(.name)"
-            ' | while read url; do
+            ' | while IFS= read -r url; do
               filename=$(basename "$url")
               echo "Downloading $filename"
               wget -O "pool/main/s/siyuan/$filename" "$url"
@@ -50,18 +47,18 @@ jobs:
 
       - name: Generate Release file
         run: |
-          cat > Release <<EOF
-Origin: Mohamed Elashri
-Label: SiYuan Patched Builds
-Suite: stable
-Codename: siyuan
-
-Architectures: amd64
-Components: main
-Description: Community-patched SiYuan for Ubuntu/Pop!_OS
-Date: $(date -R)
-EOF
-
+          cat > Release <<'EOF'
+            Origin: Mohamed Elashri
+            Label: SiYuan Patched Builds
+            Suite: stable
+            Codename: siyuan
+            
+            Architectures: amd64
+            Components: main
+            Description: Community-patched SiYuan for Ubuntu/Pop!_OS
+            Date: $(date -R)
+            EOF
+            
       - name: Commit and push
         run: |
           git config user.name "github-actions"
@@ -69,10 +66,6 @@ EOF
           git add .
           git commit -m "Auto-update APT repo $(date -I)" || echo "No changes to commit"
           git push
-
-
-
-
 
 
 
