@@ -1,4 +1,4 @@
-name: Update APT Repository (Debian Structure with Strong Hashes)
+name: Update APT Repository
 
 on:
   workflow_dispatch:
