@@ -35,7 +35,7 @@ jobs:
           # Get last 4 releases sorted by creation date descending
           releases=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
             "https://api.github.com/repos/MohamedElashri/siyuan-patch/releases?per_page=10" | \
-            jq -r '.[] | {tag_name, created_at, assets} | sort_by(.created_at) | reverse | .[0:4][] | @base64')
+          jq -r 'sort_by(.created_at) | reverse | .[0:4] | map({tag_name, created_at, assets}) | .[] | @base64')
 
           # Clear Packages file
           : > dists/siyuan/main/binary-amd64/Packages
