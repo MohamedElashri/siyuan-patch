@@ -1,4 +1,4 @@
-name: Update APT Repository
+name: Update APT Repository (Debian Structure with Strong Hashes)
 
 on:
   workflow_dispatch:
@@ -24,7 +24,6 @@ jobs:
 
       - name: Prepare folders and clean old files
         run: |
-          # Remove old metadata and ensure Debian dirs
           rm -rf dists/
           mkdir -p dists/siyuan/main/binary-amd64
 
@@ -33,7 +32,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tmp_dir="$(mktemp -d)"
-          # Fetch releases and output tab-separated: tag, name, size
           curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
             "https://api.github.com/repos/MohamedElashri/siyuan-patch/releases?per_page=50" | \
             jq -r '
@@ -80,7 +78,7 @@ jobs:
 
           gzip -c dists/siyuan/main/binary-amd64/Packages > dists/siyuan/main/binary-amd64/Packages.gz
 
-          # Generate Release file
+          # Generate Release file with Date and basic fields
           printf '%s\n' \
             "Origin: Mohamed Elashri" \
             "Label: SiYuan Patched Builds" \
@@ -92,17 +90,30 @@ jobs:
             "Date: $(date -R)" \
             > dists/siyuan/Release
 
-          # Append checksums
-          {
-            md5_packages=$(md5sum dists/siyuan/main/binary-amd64/Packages | cut -d' ' -f1)
-            size_packages=$(wc -c < dists/siyuan/main/binary-amd64/Packages)
-            md5_gz=$(md5sum dists/siyuan/main/binary-amd64/Packages.gz | cut -d' ' -f1)
-            size_gz=$(wc -c < dists/siyuan/main/binary-amd64/Packages.gz)
-            printf "MD5Sum:\n %s %d main/binary-amd64/Packages\n %s %d main/binary-amd64/Packages.gz\n" \
-              "$md5_packages" "$size_packages" \
-              "$md5_gz" "$size_gz"
-          } >> dists/siyuan/Release
+          # Append checksums: MD5, SHA256, and SHA1
+          md5_packages=$(md5sum dists/siyuan/main/binary-amd64/Packages | cut -d' ' -f1)
+          size_packages=$(wc -c < dists/siyuan/main/binary-amd64/Packages)
+          md5_gz=$(md5sum dists/siyuan/main/binary-amd64/Packages.gz | cut -d' ' -f1)
+          size_gz=$(wc -c < dists/siyuan/main/binary-amd64/Packages.gz)
 
+          sha256_packages=$(sha256sum dists/siyuan/main/binary-amd64/Packages | cut -d' ' -f1)
+          sha256_gz=$(sha256sum dists/siyuan/main/binary-amd64/Packages.gz | cut -d' ' -f1)
+
+          sha1_packages=$(sha1sum dists/siyuan/main/binary-amd64/Packages | cut -d' ' -f1)
+          sha1_gz=$(sha1sum dists/siyuan/main/binary-amd64/Packages.gz | cut -d' ' -f1)
+
+          printf 'MD5Sum:\n %s %d main/binary-amd64/Packages\n %s %d main/binary-amd64/Packages.gz\n' \
+            "$md5_packages" "$size_packages" \
+            "$md5_gz" "$size_gz" >> dists/siyuan/Release
+          
+          printf 'SHA256:\n %s %d main/binary-amd64/Packages\n %s %d main/binary-amd64/Packages.gz\n' \
+            "$sha256_packages" "$size_packages" \
+            "$sha256_gz" "$size_gz" >> dists/siyuan/Release
+          
+          printf 'SHA1:\n %s %d main/binary-amd64/Packages\n %s %d main/binary-amd64/Packages.gz\n' \
+            "$sha1_packages" "$size_packages" \
+            "$sha1_gz" "$size_gz" >> dists/siyuan/Release
+          
       - name: Ensure .nojekyll for raw files
         run: |
           touch .nojekyll
