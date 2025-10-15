@@ -1,0 +1,80 @@
+name: Update APT Repository (Auto)
+
+on:
+  workflow_dispatch:
+  # Optional: schedule daily/weekly
+  # schedule:
+  #   - cron: '0 2 * * 1'  # Every Monday at 2 AM UTC
+
+
+jobs:
+  update-apt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y wget dpkg-dev jq
+
+      - name: Fetch all releases with .deb assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p pool/main/s/siyuan
+
+          # Get all releases and filter those with .deb assets
+          curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/MohamedElashri/siyuan-patch/releases?per_page=100" \
+            | jq -r '
+              .[] |
+              select(.assets | map(.name) | any(endswith(".deb"))) |
+              .tag_name as $tag |
+              .assets[] |
+              select(.name | endswith(".deb")) |
+              "https://github.com/MohamedElashri/siyuan-patch/releases/download/\($tag)/\(.name)"
+            ' | while read url; do
+              filename=$(basename "$url")
+              echo "Downloading $filename"
+              wget -O "pool/main/s/siyuan/$filename" "$url"
+            done
+
+      - name: Generate Packages.gz
+        run: |
+          cd pool/main/s
+          dpkg-scanpackages siyuan /dev/null | gzip -9c > ../../../Packages.gz
+
+      - name: Generate Release file
+        run: |
+          cat > Release <<EOF
+Origin: Mohamed Elashri
+Label: SiYuan Patched Builds
+Suite: stable
+Codename: siyuan
+
+Architectures: amd64
+Components: main
+Description: Community-patched SiYuan for Ubuntu/Pop!_OS
+Date: $(date -R)
+EOF
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Auto-update APT repo $(date -I)" || echo "No changes to commit"
+          git push
+
+
+
+
+
+
+
+
+
