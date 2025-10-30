@@ -2,8 +2,8 @@
 +++ b/Dockerfile
 @@ -35,7 +35,7 @@
  ADD kernel/go.* .
- RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg \
+-RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg \
 -    go mod download
++RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg \
 +    GOPROXY=https://proxy.golang.org,direct go mod download
-
  ADD kernel/ .
