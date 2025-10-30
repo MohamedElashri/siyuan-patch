@@ -1,9 +1,9 @@
 --- a/Dockerfile
 +++ b/Dockerfile
-@@ -28,6 +28,7 @@ RUN <<EORUN
- #!/bin/sh -e
- apk add --no-cache gcc musl-dev
- go env -w GO111MODULE=on
-+go env -w GOPROXY=https://proxy.golang.org,direct
- go env -w CGO_ENABLED=1
- EORUN
+@@ -35,7 +35,7 @@
+ ADD kernel/go.* .
+ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg \
+-    go mod download
++    GOPROXY=https://proxy.golang.org,direct go mod download
+
+ ADD kernel/ .
