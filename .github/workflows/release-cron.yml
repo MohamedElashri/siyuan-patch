@@ -5,6 +5,13 @@ on:
     - cron: "0 12 * * *"
   workflow_dispatch:
 
+# ------------------------------------------------------------------
+# PERMISSIONS: Required to create releases and trigger other actions
+# ------------------------------------------------------------------
+permissions:
+  contents: write
+  actions: write
+
 jobs:
   create_release:
     name: get version and create release
@@ -24,7 +31,6 @@ jobs:
           echo "Upstream version: ${tag}"
 
           # Try to fetch release by tag from *our* repo
-          # A 404 means it doesn't exist → safe to create
           status_code=$(curl -s -o /dev/null -w "%{http_code}" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
@@ -55,42 +61,31 @@ jobs:
 
       - name: Dispatch builds
         if: ${{ steps.check.outputs.needs_release == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get workflow IDs
-          resp=$(curl -fsSL \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows")
+          ver="${{ steps.check.outputs.upstream_tag }}"
+          pm="${{ steps.check.outputs.package_manager }}"
+          
+          echo "Dispatching builds for version $ver with $pm"
 
-          android_id=$(echo "$resp" | grep -A5 '"path".*release-android\.yml' | grep '"id"' | head -1 | awk '{print $2}' | tr -d ',')
-          pc_id=$(echo "$resp" | grep -A5 '"path".*release-pc\.yml' | grep '"id"' | head -1 | awk '{print $2}' | tr -d ',')
-          docker_id=$(echo "$resp" | grep -A5 '"path".*release-docker\.yml' | grep '"id"' | head -1 | awk '{print $2}' | tr -d ',')
-          ios_id=$(echo "$resp" | grep -A5 '"path".*release-ios\.yml' | grep '"id"' | head -1 | awk '{print $2}' | tr -d ',')
+          # 1. Dispatch PC
+          echo "Triggering release-pc.yml..."
+          gh workflow run release-pc.yml \
+            --ref main \
+            -f version="$ver" \
+            -f packageManager="$pm"
 
-          ver=${{ steps.check.outputs.upstream_tag }}
-          pm=${{ steps.check.outputs.package_manager }}
+          # 2. Dispatch Docker
+          echo "Triggering release-docker.yml..."
+          gh workflow run release-docker.yml \
+            --ref main \
+            -f version="$ver"
 
-          curl -fsSL -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/${android_id}/dispatches" \
-            -d "{\"ref\":\"main\",\"inputs\":{\"version\":\"${ver}\",\"packageManager\":\"${pm}\"}}"
-
-          curl -fsSL -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/${pc_id}/dispatches" \
-            -d "{\"ref\":\"main\",\"inputs\":{\"version\":\"${ver}\",\"packageManager\":\"${pm}\"}}"
-
-          curl -fsSL -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/${docker_id}/dispatches" \
-            -d "{\"ref\":\"main\",\"inputs\":{\"version\":\"${ver}\"}}"
-
-          curl -fsSL -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/${ios_id}/dispatches" \
-            -d "{\"ref\":\"main\",\"inputs\":{\"version\":\"${ver}\",\"packageManager\":\"${pm}\"}}"
+          # 3. Dispatch iOS
+          # The '|| true' ensures the job doesn't fail if you don't have this file
+          echo "Triggering release-ios.yml..."
+          gh workflow run release-ios.yml \
+            --ref main \
+            -f version="$ver" \
+            -f packageManager="$pm" || echo "iOS workflow not found or failed to start (ignoring)."
