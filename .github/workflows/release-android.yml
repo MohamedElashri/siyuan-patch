@@ -103,7 +103,7 @@ jobs:
         id: decode_keystore
         uses: timheuer/base64-to-file@v1.2
         with:
-          fileName: "release.jks"
+          fileName: "debug.jks"
           fileDir: ${{ github.workspace }}/siyuan-note/siyuan-android/keystore
           encodedString: ${{ secrets.KEYSTORE }}
 
