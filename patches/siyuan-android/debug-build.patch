@@ -1,10 +1,10 @@
-diff --git forkSrcPrefix/app/build.gradle forkDstPrefix/app/build.gradle
-index 6922a27f97cc37fa3490c9b0ab5b8dd2002044a0..7a3e6bbdb0d40871ef51128f2b6b8ce756d506ae 100644
---- forkSrcPrefix/app/build.gradle
-+++ forkDstPrefix/app/build.gradle
+diff --git a/app/build.gradle b/app/build.gradle
+index 6922a27..7a3e6bb 100644
+--- a/app/build.gradle
++++ b/app/build.gradle
 @@ -4,7 +4,7 @@ plugins {
+ }
  
-
  apply from: rootProject.file('flavors.gradle')
 -apply from: rootProject.file('signings.gradle')
 +// apply from: rootProject.file('signings.gradle')
@@ -33,18 +33,15 @@ index 6922a27f97cc37fa3490c9b0ab5b8dd2002044a0..7a3e6bbdb0d40871ef51128f2b6b8ce7
 +
      buildTypes {
          release {
-@@ -56,11 +72,13 @@ android {
+             // 正式版打包时指定签名证书
+@@ -54,9 +70,11 @@ android {
              proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
          }
          debug {
 +            signingConfig signingConfigs.debug
-+
              applicationIdSuffix ".debug"
- 
              minifyEnabled false
- 
 -            resValue "string", "app_name", "SiYuan-Debug"
 +            resValue "string", "app_name", "SiYuan"
              resValue "string", "app_package_name", "org.b3log.siyuan.debug"
- 
              proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
