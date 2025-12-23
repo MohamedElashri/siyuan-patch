@@ -4,7 +4,7 @@ index 6922a27f97cc37fa3490c9b0ab5b8dd2002044a0..7a3e6bbdb0d40871ef51128f2b6b8ce7
 +++ forkDstPrefix/app/build.gradle
 @@ -4,7 +4,7 @@ plugins {
  
- // 多渠道打包配置已引用的方式传递
+
  apply from: rootProject.file('flavors.gradle')
 -apply from: rootProject.file('signings.gradle')
 +// apply from: rootProject.file('signings.gradle')
@@ -33,7 +33,6 @@ index 6922a27f97cc37fa3490c9b0ab5b8dd2002044a0..7a3e6bbdb0d40871ef51128f2b6b8ce7
 +
      buildTypes {
          release {
-             // 正式版打包时指定签名证书
 @@ -56,11 +72,13 @@ android {
              proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
          }
