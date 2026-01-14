@@ -29,21 +29,21 @@ index 51af4472aab1930b520dd923bb643ca4bf81aaa2..0b0d90f4276fae27fa0468155e1edb8e
  
  func exportLog(c *gin.Context) {
 diff --git forkSrcPrefix/kernel/model/updater.go forkDstPrefix/kernel/model/updater.go
-index f902b49d6b32d35318eb0b237037f2b4f79b8d33..cdbbc35027afb7c1173056105065268d238f68e2 100644
+index 747972b63cf..cdbbc35027afb7c1173056105065268d238f68e2 100644
 --- forkSrcPrefix/kernel/model/updater.go
 +++ forkDstPrefix/kernel/model/updater.go
-@@ -306,6 +306,11 @@ func skipNewVerInstallPkg() bool {
+@@ -320,6 +320,11 @@ func skipNewVerInstallPkg() bool {
+ 		}
  	}
- 	if !Conf.System.DownloadInstallPkg {
- 		return true
-+	} else {
-+		// Conf.System.DownloadInstallPkg(自动下载更新安装包) 强制赋值为false
+ 
++	// Conf.System.DownloadInstallPkg(自动下载更新安装包) 强制赋值为false
++	if Conf.System.DownloadInstallPkg {
 +		Conf.System.DownloadInstallPkg = false
 +		Conf.Save()
-+		return true
++	}
+ 	if skipInstallPkgPlatformCached == 1 || !Conf.System.DownloadInstallPkg {
+ 		return true
  	}
- 	if gulu.OS.IsWindows() {
- 		plat := strings.ToLower(Conf.System.OSPlatform)
 diff --git forkSrcPrefix/kernel/conf/system.go forkDstPrefix/kernel/conf/system.go
 index 6d51b4ce1020d2996a6a41898b34686bf94e40a1..e43d3184a7393bf02f1ba135d8bb79dce4f85077 100644
 --- forkSrcPrefix/kernel/conf/system.go
