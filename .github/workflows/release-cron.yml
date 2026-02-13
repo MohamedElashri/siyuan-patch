@@ -88,10 +88,18 @@ jobs:
             --ref main \
             -f version="$ver"
 
-          # 3. Dispatch iOS (Optional - remove if not needed)
+          # 3. Dispatch iOS
           echo "Triggering release-ios.yml..."
           gh workflow run release-ios.yml \
             --repo ${{ github.repository }} \
             --ref main \
             -f version="$ver" \
             -f packageManager="$pm" || echo "iOS workflow failed or not found (ignoring)."
+
+          # 4. Dispatch Android
+          echo "Triggering release-android.yml..."
+          gh workflow run release-android.yml \
+            --repo ${{ github.repository }} \
+            --ref main \
+            -f version="$ver" \
+            -f packageManager="$pm" || echo "Android workflow failed or not found (ignoring)."
