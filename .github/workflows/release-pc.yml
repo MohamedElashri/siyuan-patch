@@ -48,7 +48,7 @@ jobs:
             suffix: "win.exe"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: siyuan-note
 
