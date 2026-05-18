@@ -16,7 +16,7 @@ jobs:
     steps:
       # FIX: Checkout is required so 'gh' knows which repo it's in
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check upstream version and whether we already have it
         id: check
