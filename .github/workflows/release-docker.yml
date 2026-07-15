@@ -39,6 +39,7 @@ jobs:
           git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/disable-update.patch
           git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/default-config.patch
           git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/mock-vip-user.patch
+          sed -i 's/^FROM golang:1\.25-alpine AS go-build$/FROM golang:1.26-alpine AS go-build/' Dockerfile
 
           git status
 
