@@ -186,6 +186,7 @@ jobs:
           Terminal=false
           Type=Application
           Categories=Office;
+          StartupWMClass=org.b3log.siyuan
           EOF
           
           # Download and convert icon
