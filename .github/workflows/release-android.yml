@@ -20,7 +20,7 @@ jobs:
             kernel_path: "../../../siyuan-android/app/libs/kernel.aar"
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # sanad: ref=v7
         with:
           path: siyuan-note
 
@@ -49,14 +49,14 @@ jobs:
           mkdir -p app/libs/
 
       - name: Set up Go
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # sanad: ref=v7
         with:
           go-version-file: ${{ github.workspace }}/siyuan-note/siyuan/kernel/go.mod
           cache-dependency-path: "**/*.sum"
       - run: go version
 
       - name: Set up Node
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # sanad: ref=v7
         with:
           node-version: 22
 
@@ -101,7 +101,7 @@ jobs:
 
       - name: Decode Keystore
         id: decode_keystore
-        uses: timheuer/base64-to-file@v2.0
+        uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # sanad: ref=v2.0
         with:
           fileName: "debug.jks"
           fileDir: ${{ github.workspace }}/siyuan-note/siyuan-android/keystore
@@ -115,7 +115,7 @@ jobs:
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
 
-      - uses: joutvhu/get-release@v1
+      - uses: joutvhu/get-release@8c3531bba0d249f5e7c3d7e1954d34db9edf2a90 # sanad: ref=v1
         id: get_current_release
         with:
           tag_name: ${{ github.event.inputs.version }}
@@ -123,7 +123,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Android
-        uses: shogo82148/actions-upload-release-asset@v1
+        uses: shogo82148/actions-upload-release-asset@394b3c11c3cfc038b5396ad265c074065cf875c3 # sanad: ref=v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
