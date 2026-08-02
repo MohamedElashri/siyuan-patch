@@ -1,0 +1,236 @@
+{
+  "version": 2,
+  "generated_by": "sanad",
+  "entries": [
+    {
+      "file": ".github/workflows/release-android.yml",
+      "node": "jobs.build.steps[0].uses",
+      "owner": "actions",
+      "repo": "checkout",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v7",
+      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1"
+    },
+    {
+      "file": ".github/workflows/release-android.yml",
+      "node": "jobs.build.steps[12].uses",
+      "owner": "timheuer",
+      "repo": "base64-to-file",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v2.0",
+      "pinned_sha": "dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c"
+    },
+    {
+      "file": ".github/workflows/release-android.yml",
+      "node": "jobs.build.steps[14].uses",
+      "owner": "joutvhu",
+      "repo": "get-release",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v1",
+      "pinned_sha": "8c3531bba0d249f5e7c3d7e1954d34db9edf2a90"
+    },
+    {
+      "file": ".github/workflows/release-android.yml",
+      "node": "jobs.build.steps[15].uses",
+      "owner": "shogo82148",
+      "repo": "actions-upload-release-asset",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v1",
+      "pinned_sha": "394b3c11c3cfc038b5396ad265c074065cf875c3"
+    },
+    {
+      "file": ".github/workflows/release-android.yml",
+      "node": "jobs.build.steps[2].uses",
+      "owner": "actions",
+      "repo": "setup-go",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v7",
+      "pinned_sha": "b7ad1dad31e06c5925ef5d2fc7ad053ef454303e"
+    },
+    {
+      "file": ".github/workflows/release-android.yml",
+      "node": "jobs.build.steps[4].uses",
+      "owner": "actions",
+      "repo": "setup-node",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v7",
+      "pinned_sha": "820762786026740c76f36085b0efc47a31fe5020"
+    },
+    {
+      "file": ".github/workflows/release-cron.yml",
+      "node": "jobs.create_release.steps[0].uses",
+      "owner": "actions",
+      "repo": "checkout",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v7",
+      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1"
+    },
+    {
+      "file": ".github/workflows/release-cron.yml",
+      "node": "jobs.create_release.steps[2].uses",
+      "owner": "ncipollo",
+      "repo": "release-action",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v1",
+      "pinned_sha": "339a81892b84b4eeb0f6e744e4574d79d0d9b8dd"
+    },
+    {
+      "file": ".github/workflows/release-docker.yml",
+      "node": "jobs.build.steps[0].uses",
+      "owner": "jlumbroso",
+      "repo": "free-disk-space",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v1.3.1",
+      "pinned_sha": "54081f138730dfa15788a46383842cd2f914a1be"
+    },
+    {
+      "file": ".github/workflows/release-docker.yml",
+      "node": "jobs.build.steps[1].uses",
+      "owner": "actions",
+      "repo": "checkout",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v7",
+      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1"
+    },
+    {
+      "file": ".github/workflows/release-docker.yml",
+      "node": "jobs.build.steps[3].uses",
+      "owner": "docker",
+      "repo": "setup-buildx-action",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v4",
+      "pinned_sha": "bb05f3f5519dd87d3ba754cc423b652a5edd6d2c"
+    },
+    {
+      "file": ".github/workflows/release-ios.yml",
+      "node": "jobs.build.steps[0].uses",
+      "owner": "actions",
+      "repo": "checkout",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v7",
+      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1"
+    },
+    {
+      "file": ".github/workflows/release-ios.yml",
+      "node": "jobs.build.steps[13].uses",
+      "owner": "joutvhu",
+      "repo": "get-release",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v1",
+      "pinned_sha": "8c3531bba0d249f5e7c3d7e1954d34db9edf2a90"
+    },
+    {
+      "file": ".github/workflows/release-ios.yml",
+      "node": "jobs.build.steps[14].uses",
+      "owner": "shogo82148",
+      "repo": "actions-upload-release-asset",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v1",
+      "pinned_sha": "394b3c11c3cfc038b5396ad265c074065cf875c3"
+    },
+    {
+      "file": ".github/workflows/release-ios.yml",
+      "node": "jobs.build.steps[3].uses",
+      "owner": "actions",
+      "repo": "setup-go",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v7",
+      "pinned_sha": "b7ad1dad31e06c5925ef5d2fc7ad053ef454303e"
+    },
+    {
+      "file": ".github/workflows/release-ios.yml",
+      "node": "jobs.build.steps[5].uses",
+      "owner": "actions",
+      "repo": "setup-node",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v7",
+      "pinned_sha": "820762786026740c76f36085b0efc47a31fe5020"
+    },
+    {
+      "file": ".github/workflows/release-pc.yml",
+      "node": "jobs.build.steps[0].uses",
+      "owner": "actions",
+      "repo": "checkout",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v7",
+      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1"
+    },
+    {
+      "file": ".github/workflows/release-pc.yml",
+      "node": "jobs.build.steps[17].uses",
+      "owner": "joutvhu",
+      "repo": "get-release",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v1",
+      "pinned_sha": "8c3531bba0d249f5e7c3d7e1954d34db9edf2a90"
+    },
+    {
+      "file": ".github/workflows/release-pc.yml",
+      "node": "jobs.build.steps[18].uses",
+      "owner": "shogo82148",
+      "repo": "actions-upload-release-asset",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v1",
+      "pinned_sha": "394b3c11c3cfc038b5396ad265c074065cf875c3"
+    },
+    {
+      "file": ".github/workflows/release-pc.yml",
+      "node": "jobs.build.steps[19].uses",
+      "owner": "shogo82148",
+      "repo": "actions-upload-release-asset",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v1",
+      "pinned_sha": "394b3c11c3cfc038b5396ad265c074065cf875c3"
+    },
+    {
+      "file": ".github/workflows/release-pc.yml",
+      "node": "jobs.build.steps[4].uses",
+      "owner": "msys2",
+      "repo": "setup-msys2",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v2",
+      "pinned_sha": "66cd2cce69caa17b53920067426061ca1de3a884"
+    },
+    {
+      "file": ".github/workflows/release-pc.yml",
+      "node": "jobs.build.steps[6].uses",
+      "owner": "actions",
+      "repo": "setup-go",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v7",
+      "pinned_sha": "b7ad1dad31e06c5925ef5d2fc7ad053ef454303e"
+    },
+    {
+      "file": ".github/workflows/release-pc.yml",
+      "node": "jobs.build.steps[9].uses",
+      "owner": "actions",
+      "repo": "setup-node",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v7",
+      "pinned_sha": "820762786026740c76f36085b0efc47a31fe5020"
+    }
+  ]
+}
