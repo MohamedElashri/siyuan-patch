@@ -126,7 +126,7 @@ jobs:
 
       - name: Building ios Kernel
         run: |
-          gomobile bind --tags fts5 -ldflags '-s -w' -v -target=ios -o "${{ matrix.config.kernel_path }}" ./
+          gomobile bind -tags "fts5 sqlcipher" -ldflags '-s -w' -v -target=ios -o "${{ matrix.config.kernel_path }}" ./
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan/kernel/mobile
         env:
           GO111MODULE: on
@@ -164,3 +164,4 @@ jobs:
           asset_name: siyuan-${{ github.event.inputs.version }}-ios.ipa
           asset_path: ${{ github.workspace }}/siyuan-note/siyuan-ios-out/siyuan.ipa
           asset_content_type: application/octet-stream
+          overwrite: true

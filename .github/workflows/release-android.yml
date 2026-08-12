@@ -131,3 +131,4 @@ jobs:
           asset_name: siyuan-${{ github.event.inputs.version }}-android-arm64.apk
           asset_path: ${{ github.workspace }}/siyuan-note/siyuan-android/app/build/outputs/apk/googleplay/debug/siyuan-*.apk
           asset_content_type: application/octet-stream
+          overwrite: true
