@@ -7,8 +7,8 @@ on:
         description: "release version/tag"
         required: true
       packageManager:
-        description: "pnpm@x.x.x"
-        required: true
+        description: "pnpm@x.x.x (optional, auto-detected)"
+        required: false
 
 jobs:
   build:
@@ -107,7 +107,13 @@ jobs:
           node-version: 22
 
       - name: Install Node pnpm
-        run: npm install -g ${{ github.event.inputs.packageManager }}
+        run: |
+          PM=${{ github.event.inputs.packageManager }}
+          if [ -z "$PM" ]; then
+            PM=$(grep '"packageManager"' package.json | head -1 | awk -F: '{print $2}' | sed 's/[", ]//g')
+          fi
+          echo "Using pnpm: $PM"
+          npm install -g "$PM"
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan/app
 
       - name: Install Node Dependencies
