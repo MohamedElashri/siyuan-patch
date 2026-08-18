@@ -138,6 +138,7 @@ jobs:
           fi
           echo "Using pnpm: $PM"
           npm install -g "$PM"
+        shell: bash
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan/app
 
       - name: Install Node Dependencies
