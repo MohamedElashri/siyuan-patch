@@ -10,7 +10,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v7",
-      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1"
+      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-android.yml",
@@ -20,7 +21,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v2.0",
-      "pinned_sha": "dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c"
+      "pinned_sha": "dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-android.yml",
@@ -30,7 +32,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v1",
-      "pinned_sha": "8c3531bba0d249f5e7c3d7e1954d34db9edf2a90"
+      "pinned_sha": "8c3531bba0d249f5e7c3d7e1954d34db9edf2a90",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-android.yml",
@@ -39,8 +42,11 @@
       "repo": "actions-upload-release-asset",
       "path": "",
       "kind": "github-action",
-      "logical_ref": "v1",
-      "pinned_sha": "394b3c11c3cfc038b5396ad265c074065cf875c3"
+      "logical_ref": "v1.10.3",
+      "pinned_sha": "d0cb37bb764791e72e64e643cd7056f74f1e77d7",
+      "resolved_at": "2026-08-18T13:03:31Z",
+      "timestamp": "2026-08-07T00:13:24Z",
+      "timestamp_source": "release"
     },
     {
       "file": ".github/workflows/release-android.yml",
@@ -50,7 +56,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v7",
-      "pinned_sha": "b7ad1dad31e06c5925ef5d2fc7ad053ef454303e"
+      "pinned_sha": "b7ad1dad31e06c5925ef5d2fc7ad053ef454303e",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-android.yml",
@@ -60,7 +67,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v7",
-      "pinned_sha": "820762786026740c76f36085b0efc47a31fe5020"
+      "pinned_sha": "820762786026740c76f36085b0efc47a31fe5020",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-cron.yml",
@@ -70,7 +78,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v7",
-      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1"
+      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-cron.yml",
@@ -80,7 +89,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v1",
-      "pinned_sha": "339a81892b84b4eeb0f6e744e4574d79d0d9b8dd"
+      "pinned_sha": "339a81892b84b4eeb0f6e744e4574d79d0d9b8dd",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-docker.yml",
@@ -90,7 +100,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v1.3.1",
-      "pinned_sha": "54081f138730dfa15788a46383842cd2f914a1be"
+      "pinned_sha": "54081f138730dfa15788a46383842cd2f914a1be",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-docker.yml",
@@ -100,7 +111,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v7",
-      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1"
+      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-docker.yml",
@@ -110,7 +122,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v4",
-      "pinned_sha": "bb05f3f5519dd87d3ba754cc423b652a5edd6d2c"
+      "pinned_sha": "bb05f3f5519dd87d3ba754cc423b652a5edd6d2c",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-ios.yml",
@@ -120,7 +133,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v7",
-      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1"
+      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-ios.yml",
@@ -130,7 +144,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v1",
-      "pinned_sha": "8c3531bba0d249f5e7c3d7e1954d34db9edf2a90"
+      "pinned_sha": "8c3531bba0d249f5e7c3d7e1954d34db9edf2a90",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-ios.yml",
@@ -139,8 +154,11 @@
       "repo": "actions-upload-release-asset",
       "path": "",
       "kind": "github-action",
-      "logical_ref": "v1",
-      "pinned_sha": "394b3c11c3cfc038b5396ad265c074065cf875c3"
+      "logical_ref": "v1.10.3",
+      "pinned_sha": "d0cb37bb764791e72e64e643cd7056f74f1e77d7",
+      "resolved_at": "2026-08-18T13:03:31Z",
+      "timestamp": "2026-08-07T00:13:24Z",
+      "timestamp_source": "release"
     },
     {
       "file": ".github/workflows/release-ios.yml",
@@ -150,7 +168,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v7",
-      "pinned_sha": "b7ad1dad31e06c5925ef5d2fc7ad053ef454303e"
+      "pinned_sha": "b7ad1dad31e06c5925ef5d2fc7ad053ef454303e",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-ios.yml",
@@ -160,7 +179,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v7",
-      "pinned_sha": "820762786026740c76f36085b0efc47a31fe5020"
+      "pinned_sha": "820762786026740c76f36085b0efc47a31fe5020",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-pc.yml",
@@ -170,7 +190,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v7",
-      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1"
+      "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-pc.yml",
@@ -180,7 +201,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v1",
-      "pinned_sha": "8c3531bba0d249f5e7c3d7e1954d34db9edf2a90"
+      "pinned_sha": "8c3531bba0d249f5e7c3d7e1954d34db9edf2a90",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-pc.yml",
@@ -189,8 +211,11 @@
       "repo": "actions-upload-release-asset",
       "path": "",
       "kind": "github-action",
-      "logical_ref": "v1",
-      "pinned_sha": "394b3c11c3cfc038b5396ad265c074065cf875c3"
+      "logical_ref": "v1.10.3",
+      "pinned_sha": "d0cb37bb764791e72e64e643cd7056f74f1e77d7",
+      "resolved_at": "2026-08-18T13:03:31Z",
+      "timestamp": "2026-08-07T00:13:24Z",
+      "timestamp_source": "release"
     },
     {
       "file": ".github/workflows/release-pc.yml",
@@ -199,8 +224,11 @@
       "repo": "actions-upload-release-asset",
       "path": "",
       "kind": "github-action",
-      "logical_ref": "v1",
-      "pinned_sha": "394b3c11c3cfc038b5396ad265c074065cf875c3"
+      "logical_ref": "v1.10.3",
+      "pinned_sha": "d0cb37bb764791e72e64e643cd7056f74f1e77d7",
+      "resolved_at": "2026-08-18T13:03:31Z",
+      "timestamp": "2026-08-07T00:13:24Z",
+      "timestamp_source": "release"
     },
     {
       "file": ".github/workflows/release-pc.yml",
@@ -210,7 +238,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v2",
-      "pinned_sha": "66cd2cce69caa17b53920067426061ca1de3a884"
+      "pinned_sha": "66cd2cce69caa17b53920067426061ca1de3a884",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-pc.yml",
@@ -220,7 +249,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v7",
-      "pinned_sha": "b7ad1dad31e06c5925ef5d2fc7ad053ef454303e"
+      "pinned_sha": "b7ad1dad31e06c5925ef5d2fc7ad053ef454303e",
+      "resolved_at": "2026-08-18T13:03:31Z"
     },
     {
       "file": ".github/workflows/release-pc.yml",
@@ -230,7 +260,8 @@
       "path": "",
       "kind": "github-action",
       "logical_ref": "v7",
-      "pinned_sha": "820762786026740c76f36085b0efc47a31fe5020"
+      "pinned_sha": "820762786026740c76f36085b0efc47a31fe5020",
+      "resolved_at": "2026-08-18T13:03:31Z"
     }
   ]
 }
