@@ -10,6 +10,9 @@ on:
         description: "pnpm@x.x.x (optional, auto-detected)"
         required: false
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ${{ matrix.config.os }}
@@ -25,6 +28,8 @@ jobs:
             deb_arch: "amd64"
             unpacked_dir: "linux-unpacked"
             suffix: "linux.tar.gz"
+            appimage_suffix: "linux.AppImage"
+            rpm_suffix: "linux.rpm"
           - os: ubuntu-24.04-arm
             kernel_path: "../app/kernel-linux-arm64/SiYuan-Kernel"
             build_args: "-s -w -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
@@ -34,6 +39,8 @@ jobs:
             deb_arch: "arm64"
             unpacked_dir: "linux-arm64-unpacked"
             suffix: "linux-arm64.tar.gz"
+            appimage_suffix: "linux-arm64.AppImage"
+            rpm_suffix: "linux-arm64.rpm"
           - os: macos-latest
             kernel_path: "../app/kernel-darwin/SiYuan-Kernel"
             build_args: "-s -w -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
@@ -202,6 +209,12 @@ jobs:
           GOPATH: ${{ github.workspace }}/go
           GOARCH: ${{ matrix.config.goarch }}
 
+      - name: Install Linux packaging dependencies
+        if: matrix.config.goos == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fakeroot dpkg-dev imagemagick rpm
+
       - name: Building Electron
         run: pnpm run ${{ matrix.config.electron_args }}
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan/app
@@ -209,9 +222,6 @@ jobs:
       - name: Create DEB Package
         if: matrix.config.goos == 'linux'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y fakeroot dpkg-dev imagemagick
-          
           # Create directory structure for deb package
           mkdir -p siyuan-deb/DEBIAN
           mkdir -p siyuan-deb/usr/lib/siyuan
@@ -284,3 +294,36 @@ jobs:
           asset_path: ${{ github.workspace }}/siyuan-${{ github.event.inputs.version }}-${{ matrix.config.deb_arch }}.deb
           asset_content_type: application/vnd.debian.binary-package
           overwrite: true
+
+      - name: Upload AppImage
+        if: matrix.config.goos == 'linux'
+        uses: shogo82148/actions-upload-release-asset@d0cb37bb764791e72e64e643cd7056f74f1e77d7 # sanad: ref=v1.10.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_current_release.outputs.upload_url }}
+          asset_name: siyuan-${{ github.event.inputs.version }}-${{ matrix.config.appimage_suffix }}
+          asset_path: ${{ github.workspace }}/siyuan-note/siyuan/app/build/siyuan-*-${{ matrix.config.appimage_suffix }}
+          asset_content_type: application/octet-stream
+          overwrite: true
+
+      - name: Upload RPM Package
+        if: matrix.config.goos == 'linux'
+        uses: shogo82148/actions-upload-release-asset@d0cb37bb764791e72e64e643cd7056f74f1e77d7 # sanad: ref=v1.10.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_current_release.outputs.upload_url }}
+          asset_name: siyuan-${{ github.event.inputs.version }}-${{ matrix.config.rpm_suffix }}
+          asset_path: ${{ github.workspace }}/siyuan-note/siyuan/app/build/siyuan-*-${{ matrix.config.rpm_suffix }}
+          asset_content_type: application/x-rpm
+          overwrite: true
+
+  checksums:
+    name: Update release checksums
+    needs: build
+    uses: ./.github/workflows/release-checksums.yml
+    with:
+      version: ${{ github.event.inputs.version }}
+    permissions:
+      contents: write

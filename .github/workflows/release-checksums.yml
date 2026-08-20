@@ -1,0 +1,74 @@
+name: release-checksums
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "release version/tag"
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "release version/tag"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    name: Update SHA256SUMS.txt
+    runs-on: ubuntu-latest
+    concurrency:
+      group: release-checksums-${{ inputs.version }}
+      cancel-in-progress: false
+    steps:
+      - name: Generate checksums from uploaded release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+
+          release_json="${RUNNER_TEMP}/release.json"
+          ready=false
+
+          # GitHub computes a SHA-256 digest for each uploaded release asset.
+          # Wait briefly for every visible SiYuan asset to finish processing.
+          for attempt in {1..12}; do
+            gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${VERSION}" > "${release_json}"
+
+            asset_count="$(jq '[.assets[] | select(.name | startswith("siyuan-"))] | length' "${release_json}")"
+            pending_count="$(jq '[.assets[] | select(.name | startswith("siyuan-")) | select(.state != "uploaded" or (((.digest // "") | startswith("sha256:")) | not))] | length' "${release_json}")"
+
+            if [ "${asset_count}" -gt 0 ] && [ "${pending_count}" -eq 0 ]; then
+              ready=true
+              break
+            fi
+
+            echo "Waiting for release asset digests (${pending_count} pending)..."
+            sleep 5
+          done
+
+          if [ "${ready}" != true ]; then
+            echo "Release assets are missing completed SHA-256 digests"
+            exit 1
+          fi
+
+          jq -r '.assets[]
+            | select(.name | startswith("siyuan-"))
+            | [(.digest | sub("^sha256:"; "")), .name]
+            | @tsv' "${release_json}" \
+            | LC_ALL=C sort -k2,2 \
+            | awk -F '\t' '{print $1 "  " $2}' \
+            > SHA256SUMS.txt
+
+          if ! awk 'length($1) != 64 { exit 1 } END { if (NR == 0) exit 1 }' SHA256SUMS.txt; then
+            echo "Generated checksum file is invalid"
+            exit 1
+          fi
+
+          cat SHA256SUMS.txt
+          gh release upload "${VERSION}" SHA256SUMS.txt --repo "${GITHUB_REPOSITORY}" --clobber

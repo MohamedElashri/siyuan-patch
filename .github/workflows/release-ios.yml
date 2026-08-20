@@ -10,6 +10,9 @@ on:
         description: "pnpm@x.x.x (optional, auto-detected)"
         required: false
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ${{ matrix.config.os }}
@@ -172,3 +175,12 @@ jobs:
           asset_path: ${{ github.workspace }}/siyuan-note/siyuan-ios-out/siyuan.ipa
           asset_content_type: application/octet-stream
           overwrite: true
+
+  checksums:
+    name: Update release checksums
+    needs: build
+    uses: ./.github/workflows/release-checksums.yml
+    with:
+      version: ${{ github.event.inputs.version }}
+    permissions:
+      contents: write

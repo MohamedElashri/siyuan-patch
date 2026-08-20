@@ -27,6 +27,8 @@ Several changes have been made to improve privacy and user experience:
 1. Navigate to the [Releases page](https://github.com/MohamedElashri/siyuan-patch/releases)
 2. Download the appropriate version for your operating system
 
+Linux releases include tar.gz, DEB, AppImage, and RPM packages for x86-64 and ARM64. Use `SHA256SUMS.txt` from the release to verify downloaded assets.
+
 ### Docker Deployment
 Container images are available on Docker Hub:
 ```

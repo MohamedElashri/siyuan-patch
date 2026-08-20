@@ -11,7 +11,9 @@
       "kind": "github-action",
       "logical_ref": "v7",
       "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-07-17T18:45:11Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-android.yml",
@@ -22,7 +24,9 @@
       "kind": "github-action",
       "logical_ref": "v2.0",
       "pinned_sha": "dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-04-28T21:16:33Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-android.yml",
@@ -33,7 +37,9 @@
       "kind": "github-action",
       "logical_ref": "v1",
       "pinned_sha": "8c3531bba0d249f5e7c3d7e1954d34db9edf2a90",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-04-15T06:06:59Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-android.yml",
@@ -44,7 +50,7 @@
       "kind": "github-action",
       "logical_ref": "v1.10.3",
       "pinned_sha": "d0cb37bb764791e72e64e643cd7056f74f1e77d7",
-      "resolved_at": "2026-08-18T13:03:31Z",
+      "resolved_at": "2026-08-20T23:10:02Z",
       "timestamp": "2026-08-07T00:13:24Z",
       "timestamp_source": "release"
     },
@@ -57,7 +63,9 @@
       "kind": "github-action",
       "logical_ref": "v7",
       "pinned_sha": "b7ad1dad31e06c5925ef5d2fc7ad053ef454303e",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-07-16T02:47:49Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-android.yml",
@@ -68,7 +76,22 @@
       "kind": "github-action",
       "logical_ref": "v7",
       "pinned_sha": "820762786026740c76f36085b0efc47a31fe5020",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-07-14T02:38:27Z",
+      "timestamp_source": "commit"
+    },
+    {
+      "file": ".github/workflows/release-android.yml",
+      "node": "jobs.build.steps[9].uses",
+      "owner": "actions",
+      "repo": "setup-java",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v5",
+      "pinned_sha": "b6effb05e454b25005698d916606bdc6ffcbf961",
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-07-31T19:34:51Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-cron.yml",
@@ -79,7 +102,9 @@
       "kind": "github-action",
       "logical_ref": "v7",
       "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-07-17T18:45:11Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-cron.yml",
@@ -90,7 +115,9 @@
       "kind": "github-action",
       "logical_ref": "v1",
       "pinned_sha": "339a81892b84b4eeb0f6e744e4574d79d0d9b8dd",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2019-08-27T18:57:27Z",
+      "timestamp_source": "release"
     },
     {
       "file": ".github/workflows/release-docker.yml",
@@ -101,7 +128,9 @@
       "kind": "github-action",
       "logical_ref": "v1.3.1",
       "pinned_sha": "54081f138730dfa15788a46383842cd2f914a1be",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2023-10-27T03:17:07Z",
+      "timestamp_source": "release"
     },
     {
       "file": ".github/workflows/release-docker.yml",
@@ -112,7 +141,9 @@
       "kind": "github-action",
       "logical_ref": "v7",
       "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-07-17T18:45:11Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-docker.yml",
@@ -123,7 +154,22 @@
       "kind": "github-action",
       "logical_ref": "v4",
       "pinned_sha": "bb05f3f5519dd87d3ba754cc423b652a5edd6d2c",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-08-17T12:27:36Z",
+      "timestamp_source": "commit"
+    },
+    {
+      "file": ".github/workflows/release-docker.yml",
+      "node": "jobs.build.steps[4].uses",
+      "owner": "docker",
+      "repo": "login-action",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v4",
+      "pinned_sha": "dbcb813823bdd20940b903addbd779551569679f",
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-07-29T11:33:29Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-ios.yml",
@@ -134,7 +180,9 @@
       "kind": "github-action",
       "logical_ref": "v7",
       "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-07-17T18:45:11Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-ios.yml",
@@ -145,7 +193,9 @@
       "kind": "github-action",
       "logical_ref": "v1",
       "pinned_sha": "8c3531bba0d249f5e7c3d7e1954d34db9edf2a90",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-04-15T06:06:59Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-ios.yml",
@@ -156,7 +206,7 @@
       "kind": "github-action",
       "logical_ref": "v1.10.3",
       "pinned_sha": "d0cb37bb764791e72e64e643cd7056f74f1e77d7",
-      "resolved_at": "2026-08-18T13:03:31Z",
+      "resolved_at": "2026-08-20T23:10:02Z",
       "timestamp": "2026-08-07T00:13:24Z",
       "timestamp_source": "release"
     },
@@ -169,7 +219,9 @@
       "kind": "github-action",
       "logical_ref": "v7",
       "pinned_sha": "b7ad1dad31e06c5925ef5d2fc7ad053ef454303e",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-07-16T02:47:49Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-ios.yml",
@@ -180,7 +232,9 @@
       "kind": "github-action",
       "logical_ref": "v7",
       "pinned_sha": "820762786026740c76f36085b0efc47a31fe5020",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-07-14T02:38:27Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-pc.yml",
@@ -191,7 +245,22 @@
       "kind": "github-action",
       "logical_ref": "v7",
       "pinned_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-07-17T18:45:11Z",
+      "timestamp_source": "commit"
+    },
+    {
+      "file": ".github/workflows/release-pc.yml",
+      "node": "jobs.build.steps[10].uses",
+      "owner": "actions",
+      "repo": "setup-node",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v7",
+      "pinned_sha": "820762786026740c76f36085b0efc47a31fe5020",
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-07-14T02:38:27Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-pc.yml",
@@ -207,15 +276,15 @@
     {
       "file": ".github/workflows/release-pc.yml",
       "node": "jobs.build.steps[18].uses",
-      "owner": "shogo82148",
-      "repo": "actions-upload-release-asset",
+      "owner": "joutvhu",
+      "repo": "get-release",
       "path": "",
       "kind": "github-action",
-      "logical_ref": "v1.10.3",
-      "pinned_sha": "d0cb37bb764791e72e64e643cd7056f74f1e77d7",
-      "resolved_at": "2026-08-18T13:03:31Z",
-      "timestamp": "2026-08-07T00:13:24Z",
-      "timestamp_source": "release"
+      "logical_ref": "v1",
+      "pinned_sha": "8c3531bba0d249f5e7c3d7e1954d34db9edf2a90",
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-04-15T06:06:59Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-pc.yml",
@@ -226,7 +295,20 @@
       "kind": "github-action",
       "logical_ref": "v1.10.3",
       "pinned_sha": "d0cb37bb764791e72e64e643cd7056f74f1e77d7",
-      "resolved_at": "2026-08-18T13:03:31Z",
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-08-07T00:13:24Z",
+      "timestamp_source": "release"
+    },
+    {
+      "file": ".github/workflows/release-pc.yml",
+      "node": "jobs.build.steps[20].uses",
+      "owner": "shogo82148",
+      "repo": "actions-upload-release-asset",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v1.10.3",
+      "pinned_sha": "d0cb37bb764791e72e64e643cd7056f74f1e77d7",
+      "resolved_at": "2026-08-20T23:10:02Z",
       "timestamp": "2026-08-07T00:13:24Z",
       "timestamp_source": "release"
     },
@@ -239,7 +321,9 @@
       "kind": "github-action",
       "logical_ref": "v2",
       "pinned_sha": "66cd2cce69caa17b53920067426061ca1de3a884",
-      "resolved_at": "2026-08-18T13:03:31Z"
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2020-07-20T12:07:19Z",
+      "timestamp_source": "release"
     },
     {
       "file": ".github/workflows/release-pc.yml",
@@ -251,6 +335,19 @@
       "logical_ref": "v7",
       "pinned_sha": "b7ad1dad31e06c5925ef5d2fc7ad053ef454303e",
       "resolved_at": "2026-08-18T13:03:31Z"
+    },
+    {
+      "file": ".github/workflows/release-pc.yml",
+      "node": "jobs.build.steps[7].uses",
+      "owner": "actions",
+      "repo": "setup-go",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v7",
+      "pinned_sha": "b7ad1dad31e06c5925ef5d2fc7ad053ef454303e",
+      "resolved_at": "2026-08-20T23:10:02Z",
+      "timestamp": "2026-07-16T02:47:49Z",
+      "timestamp_source": "commit"
     },
     {
       "file": ".github/workflows/release-pc.yml",
