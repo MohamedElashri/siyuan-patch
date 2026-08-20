@@ -22,7 +22,18 @@ jobs:
             electron_args: "dist-linux"
             goos: "linux"
             goarch: "amd64"
+            deb_arch: "amd64"
+            unpacked_dir: "linux-unpacked"
             suffix: "linux.tar.gz"
+          - os: ubuntu-24.04-arm
+            kernel_path: "../app/kernel-linux-arm64/SiYuan-Kernel"
+            build_args: "-s -w -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
+            electron_args: "dist-linux-arm64"
+            goos: "linux"
+            goarch: "arm64"
+            deb_arch: "arm64"
+            unpacked_dir: "linux-arm64-unpacked"
+            suffix: "linux-arm64.tar.gz"
           - os: macos-latest
             kernel_path: "../app/kernel-darwin/SiYuan-Kernel"
             build_args: "-s -w -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
@@ -44,8 +55,19 @@ jobs:
             goos: "windows"
             gobin: "bin"
             mingwsys: "MINGW64"
+            msys_packages: "p7zip mingw-w64-x86_64-lua"
             goarch: "amd64"
             suffix: "win.exe"
+          - os: windows-11-arm
+            kernel_path: "../app/kernel-arm64/SiYuan-Kernel.exe"
+            build_args: "-s -w -H=windowsgui -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
+            electron_args: "dist-arm64"
+            goos: "windows"
+            gobin: "bin"
+            mingwsys: "CLANGARM64"
+            msys_packages: "p7zip mingw-w64-clang-aarch64-clang"
+            goarch: "arm64"
+            suffix: "win-arm64.exe"
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # sanad: ref=v7
@@ -96,11 +118,27 @@ jobs:
           # Show status but don't fail if there are changes
           git status || true
 
-      - name: Set up MingGW
+      - name: Set up MSYS2/MinGW
+        id: msys2
         uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # sanad: ref=v2
         if: contains( matrix.config.goos, 'windows')
         with:
-          install: p7zip mingw-w64-x86_64-lua
+          msystem: ${{ matrix.config.mingwsys }}
+          install: ${{ matrix.config.msys_packages }}
+
+      - name: Configure Windows ARM64 C compiler
+        if: matrix.config.goos == 'windows' && matrix.config.goarch == 'arm64'
+        shell: pwsh
+        run: |
+          $clang = Join-Path "${{ steps.msys2.outputs.msys2-location }}" "clangarm64\bin\clang.exe"
+          if (-not (Test-Path $clang)) {
+            throw "ARM64 C compiler not found at $clang"
+          }
+          $target = (& $clang -dumpmachine).Trim()
+          if ($target -notmatch '^aarch64-w64-') {
+            throw "Unexpected ARM64 C compiler target: $target"
+          }
+          "CC=$clang" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Set up TDM-GCC
         run: msys2 -c "bash siyuan-note/siyuan/scripts/get-tdm-gcc.sh tdm https://github.com/jmeubank/tdm-gcc/releases/download/v10.3.0-tdm-1/tdm-gcc-10.3.0.exe" && echo "CC=${{ github.workspace }}/tdm/bin/gcc.exe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
@@ -181,7 +219,7 @@ jobs:
           mkdir -p siyuan-deb/usr/share/icons/hicolor/512x512/apps
           
           # Copy application files
-          cp -r ${{ github.workspace }}/siyuan-note/siyuan/app/build/linux-unpacked/* siyuan-deb/usr/lib/siyuan/
+          cp -r ${{ github.workspace }}/siyuan-note/siyuan/app/build/${{ matrix.config.unpacked_dir }}/* siyuan-deb/usr/lib/siyuan/
           
           # Create desktop entry
           cat > siyuan-deb/usr/share/applications/siyuan.desktop << EOF
@@ -206,7 +244,7 @@ jobs:
           Version: ${{ steps.format_version_unix.outputs.version || steps.format_version_windows.outputs.version }}
           Section: office
           Priority: optional
-          Architecture: amd64
+          Architecture: ${{ matrix.config.deb_arch }}
           Maintainer: melashri <siyuan@elashri.com>
           Description: SiYuan Note-Taking Software
            SiYuan is a personal knowledge management system that supports 
@@ -215,7 +253,7 @@ jobs:
           
           # Build deb package
           fakeroot dpkg-deb --build siyuan-deb
-          mv siyuan-deb.deb siyuan-${{ github.event.inputs.version }}-amd64.deb
+          mv siyuan-deb.deb siyuan-${{ github.event.inputs.version }}-${{ matrix.config.deb_arch }}.deb
 
       - uses: joutvhu/get-release@8c3531bba0d249f5e7c3d7e1954d34db9edf2a90 # sanad: ref=v1
         id: get_current_release
@@ -242,7 +280,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_current_release.outputs.upload_url }}
-          asset_name: siyuan-${{ github.event.inputs.version }}-amd64.deb
-          asset_path: ${{ github.workspace }}/siyuan-${{ github.event.inputs.version }}-amd64.deb
+          asset_name: siyuan-${{ github.event.inputs.version }}-${{ matrix.config.deb_arch }}.deb
+          asset_path: ${{ github.workspace }}/siyuan-${{ github.event.inputs.version }}-${{ matrix.config.deb_arch }}.deb
           asset_content_type: application/vnd.debian.binary-package
           overwrite: true

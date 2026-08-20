@@ -1,6 +1,6 @@
 # SiYuan Note - Modified Version
 
-This repository contains modified builds of [SiYuan Note](https://github.com/siyuan-note/siyuan), focusing on Linux, macOS, iOS, and Docker server deployments. Windows and Android builds are not supported.
+This repository contains modified builds of [SiYuan Note](https://github.com/siyuan-note/siyuan), focusing on Linux, Windows, macOS, iOS, Android, and Docker server deployments. Linux and Windows desktop builds are available for both x86-64 and ARM64.
 
 ## Feature Modifications
 
@@ -23,7 +23,7 @@ Several changes have been made to improve privacy and user experience:
 
 ## Installation Guide
 
-### Desktop Clients (macOS / Linux)
+### Desktop Clients (macOS / Linux / Windows)
 1. Navigate to the [Releases page](https://github.com/MohamedElashri/siyuan-patch/releases)
 2. Download the appropriate version for your operating system
 
@@ -45,7 +45,7 @@ The repository automatically builds new versions every Tuesday and Friday at 20:
 
 1. Fork this repository to your GitHub account
 
-2. Desktop Client Builds (macOS/Linux)
+2. Desktop Client Builds (macOS/Linux/Windows)
    - No additional configuration required
    - Proceed with the build workflow
 
