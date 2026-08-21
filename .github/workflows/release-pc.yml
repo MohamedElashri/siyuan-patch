@@ -30,6 +30,10 @@ jobs:
             suffix: "linux.tar.gz"
             appimage_suffix: "linux.AppImage"
             rpm_suffix: "linux.rpm"
+            electron_config: "electron-builder-linux.yml"
+            electron_arch: "x64"
+            pacman_arch: "x86_64"
+            pacman_suffix: "archlinux-x86_64.pkg.tar.zst"
           - os: ubuntu-24.04-arm
             kernel_path: "../app/kernel-linux-arm64/SiYuan-Kernel"
             build_args: "-s -w -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
@@ -41,6 +45,10 @@ jobs:
             suffix: "linux-arm64.tar.gz"
             appimage_suffix: "linux-arm64.AppImage"
             rpm_suffix: "linux-arm64.rpm"
+            electron_config: "electron-builder-linux-arm64.yml"
+            electron_arch: "arm64"
+            pacman_arch: "aarch64"
+            pacman_suffix: "archlinux-aarch64.pkg.tar.zst"
           - os: macos-latest
             kernel_path: "../app/kernel-darwin/SiYuan-Kernel"
             build_args: "-s -w -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
@@ -213,7 +221,7 @@ jobs:
         if: matrix.config.goos == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y fakeroot dpkg-dev imagemagick rpm
+          sudo apt-get install -y fakeroot dpkg-dev imagemagick libarchive-tools rpm zstd
 
       - name: Building Electron
         run: pnpm run ${{ matrix.config.electron_args }}
@@ -317,6 +325,41 @@ jobs:
           asset_name: siyuan-${{ github.event.inputs.version }}-${{ matrix.config.rpm_suffix }}
           asset_path: ${{ github.workspace }}/siyuan-note/siyuan/app/build/siyuan-*-${{ matrix.config.rpm_suffix }}
           asset_content_type: application/x-rpm
+          overwrite: true
+
+      - name: Build Arch Linux Package
+        if: matrix.config.goos == 'linux'
+        run: |
+          pnpm exec electron-builder \
+            --linux pacman \
+            --${{ matrix.config.electron_arch }} \
+            --config "${{ matrix.config.electron_config }}" \
+            --config.pacman.artifactName="siyuan-${{ steps.format_version_unix.outputs.version }}-archlinux-${{ matrix.config.pacman_arch }}.pkg.tar.zst" \
+            --config.pacman.packageName=siyuan \
+            --config.pacman.compression=zstd \
+            --publish=never
+
+          package="build/siyuan-${{ steps.format_version_unix.outputs.version }}-archlinux-${{ matrix.config.pacman_arch }}.pkg.tar.zst"
+          test -s "${package}"
+          zstd --test "${package}"
+
+          package_arch="$(bsdtar -xOf "${package}" .PKGINFO | sed -n 's/^arch = //p')"
+          if [ "${package_arch}" != "${{ matrix.config.pacman_arch }}" ]; then
+            echo "Unexpected Arch package architecture: ${package_arch}"
+            exit 1
+          fi
+        working-directory: ${{ github.workspace }}/siyuan-note/siyuan/app
+
+      - name: Upload Arch Linux Package
+        if: matrix.config.goos == 'linux'
+        uses: shogo82148/actions-upload-release-asset@d0cb37bb764791e72e64e643cd7056f74f1e77d7 # sanad: ref=v1.10.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_current_release.outputs.upload_url }}
+          asset_name: siyuan-${{ github.event.inputs.version }}-${{ matrix.config.pacman_suffix }}
+          asset_path: ${{ github.workspace }}/siyuan-note/siyuan/app/build/siyuan-*-archlinux-${{ matrix.config.pacman_arch }}.pkg.tar.zst
+          asset_content_type: application/octet-stream
           overwrite: true
 
   checksums:
