@@ -4,24 +4,18 @@ This repository contains modified builds of [SiYuan Note](https://github.com/siy
 
 ## Downloads
 
-| OS | Architecture | Package Type | Download |
-|----|--------------|--------------|----------|
-| Linux | x86_64 | tar.gz | [siyuan-latest-linux.tar.gz](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux.tar.gz) |
-| Linux | x86_64 | AppImage | [siyuan-latest-linux.AppImage](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux.AppImage) |
-| Linux | x86_64 | DEB | [siyuan-latest-amd64.deb](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-amd64.deb) |
-| Linux | x86_64 | RPM | [siyuan-latest-linux.rpm](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux.rpm) |
-| Linux | ARM64 | tar.gz | [siyuan-latest-linux-arm64.tar.gz](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux-arm64.tar.gz) |
-| Linux | ARM64 | AppImage | [siyuan-latest-linux-arm64.AppImage](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux-arm64.AppImage) |
-| Linux | ARM64 | DEB | [siyuan-latest-arm64.deb](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-arm64.deb) |
-| Linux | ARM64 | RPM | [siyuan-latest-linux-arm64.rpm](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux-arm64.rpm) |
-| Linux (Arch) | x86_64 | pkg.tar.zst | [siyuan-latest-archlinux-x86_64.pkg.tar.zst](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-archlinux-x86_64.pkg.tar.zst) |
-| Linux (Arch) | ARM64 | pkg.tar.zst | [siyuan-latest-archlinux-aarch64.pkg.tar.zst](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-archlinux-aarch64.pkg.tar.zst) |
-| Windows | x86_64 | EXE | [siyuan-latest-win.exe](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-win.exe) |
-| Windows | ARM64 | EXE | [siyuan-latest-win-arm64.exe](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-win-arm64.exe) |
-| macOS | x86_64 | DMG | [siyuan-latest-mac.dmg](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-mac.dmg) |
-| macOS | ARM64 | DMG | [siyuan-latest-mac-arm64.dmg](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-mac-arm64.dmg) |
-| iOS | ARM64 | IPA | [siyuan-latest-ios.ipa](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-ios.ipa) |
-| Android | ARM64 | APK | [siyuan-latest-android-arm64.apk](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-android-arm64.apk) |
+| OS | Architecture | Packages | Downloads |
+|----|--------------|----------|-----------|
+| Linux | x86_64 | tar.gz, AppImage, DEB, RPM | [tar.gz](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux.tar.gz)<br>[AppImage](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux.AppImage)<br>[DEB](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-amd64.deb)<br>[RPM](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux.rpm) |
+| Linux | ARM64 | tar.gz, AppImage, DEB, RPM | [tar.gz](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux-arm64.tar.gz)<br>[AppImage](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux-arm64.AppImage)<br>[DEB](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-arm64.deb)<br>[RPM](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux-arm64.rpm) |
+| Linux (Arch) | x86_64 | pkg.tar.zst | [pkg.tar.zst](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-archlinux-x86_64.pkg.tar.zst) |
+| Linux (Arch) | ARM64 | pkg.tar.zst | [pkg.tar.zst](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-archlinux-aarch64.pkg.tar.zst) |
+| Windows | x86_64 | EXE | [EXE](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-win.exe) |
+| Windows | ARM64 | EXE | [EXE](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-win-arm64.exe) |
+| macOS | x86_64 | DMG | [DMG](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-mac.dmg) |
+| macOS | ARM64 | DMG | [DMG](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-mac-arm64.dmg) |
+| iOS | ARM64 | IPA | [IPA](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-ios.ipa) |
+| Android | ARM64 | APK | [APK](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-android-arm64.apk) |
 | Docker | Multi-arch | Image | [docker pull melashri/siyuan:latest](https://hub.docker.com/r/melashri/siyuan) |
 
 > Use `SHA256SUMS.txt` from the [latest release](https://github.com/MohamedElashri/siyuan-patch/releases/latest) to verify downloaded assets.
