@@ -6,12 +6,22 @@ This repository contains modified builds of [SiYuan Note](https://github.com/siy
 
 ### Desktop
 
-| Platform | Architecture | Downloads |
+#### Linux
+
+Choose the package format for your distribution and architecture:
+
+| Package format | x86_64 | ARM64 |
 | --- | --- | --- |
-| Linux | x86_64 | [Tarball](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux.tar.gz) · [AppImage](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux.AppImage) · [DEB](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-amd64.deb) · [RPM](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux.rpm) |
-| Linux | ARM64 | [Tarball](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux-arm64.tar.gz) · [AppImage](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux-arm64.AppImage) · [DEB](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-arm64.deb) · [RPM](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux-arm64.rpm) |
-| Arch Linux | x86_64 | [Package](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-archlinux-x86_64.pkg.tar.zst) |
-| Arch Linux | ARM64 | [Package](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-archlinux-aarch64.pkg.tar.zst) |
+| Portable tarball | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux.tar.gz) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux-arm64.tar.gz) |
+| AppImage | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux.AppImage) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux-arm64.AppImage) |
+| Debian / Ubuntu (`.deb`) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-amd64.deb) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-arm64.deb) |
+| Fedora / RHEL (`.rpm`) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux.rpm) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-linux-arm64.rpm) |
+| Arch Linux (`.pkg.tar.zst`) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-archlinux-x86_64.pkg.tar.zst) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-archlinux-aarch64.pkg.tar.zst) |
+
+#### Windows and macOS
+
+| Platform | Architecture | Download |
+| --- | --- | --- |
 | Windows | x86_64 | [Installer](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-win.exe) |
 | Windows | ARM64 | [Installer](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-win-arm64.exe) |
 | macOS | Intel | [DMG](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-mac.dmg) |
