@@ -13,7 +13,7 @@ index c4590e2..133208f 100644
  	}
  }
 diff --git a/kernel/conf/appearance.go b/kernel/conf/appearance.go
-index 908de47..6d5d613 100644
+index 1bc316a..68ae464 100644
 --- forkSrcPrefix/kernel/conf/appearance.go
 +++ forkDstPrefix/kernel/conf/appearance.go
 @@ -51,7 +51,7 @@ func NewAppearance() *Appearance {
@@ -24,7 +24,7 @@ index 908de47..6d5d613 100644
 +		CloseButtonBehavior: 1,
  		HideToolbar:         true,
  		HideStatusBar:       false,
- 		StatusBar:           &util.StatusBar{},
+ 		StatusBar:           util.NewStatusBar(util.IsMobileContainer()),
 diff --git a/kernel/conf/sync.go b/kernel/conf/sync.go
 index b076c5e..662b300 100644
 --- forkSrcPrefix/kernel/conf/sync.go

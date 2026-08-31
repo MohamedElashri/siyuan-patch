@@ -1,8 +1,8 @@
 diff --git a/kernel/api/setting.go b/kernel/api/setting.go
-index a67710b..4955641 100644
+index 4c80557..8c28456 100644
 --- forkSrcPrefix/kernel/api/setting.go
 +++ forkDstPrefix/kernel/api/setting.go
-@@ -958,7 +958,7 @@ func getPublish(c *gin.Context) {
+@@ -1036,7 +1036,7 @@ func getPublish(c *gin.Context) {
  	}
  }
  
@@ -11,8 +11,8 @@ index a67710b..4955641 100644
  	ret := gulu.Ret.NewResult()
  	defer c.JSON(http.StatusOK, ret)
  
-@@ -980,6 +980,48 @@ func getCloudUser(c *gin.Context) {
- 	ret.Data = model.Conf.GetUser()
+@@ -1069,6 +1069,48 @@ func getCloudUser(c *gin.Context) {
+ 	ret.Msg = model.Conf.Language(18)
  }
  
 +func getCloudUser(c *gin.Context) {
