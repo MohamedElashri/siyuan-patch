@@ -28,7 +28,7 @@ index 4c80557..8c28456 100644
 +		UserTitles:                 []*conf.UserTitle{},
 +		UserCreateTime:             "29991231 00:00:00",
 +		UserSiYuanProExpireTime:    -1,
-+		UserToken:                  "token",
++		UserToken:                  "",
 +		UserTokenExpireTime:        "32503593600",
 +		UserSiYuanSubscriptionType: 1,
 +		UserSiYuanOneTimePayStatus: 1,
