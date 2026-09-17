@@ -1,17 +1,3 @@
-diff --git a/kernel/conf/account.go b/kernel/conf/account.go
-index c4590e2..133208f 100644
---- forkSrcPrefix/kernel/conf/account.go
-+++ forkDstPrefix/kernel/conf/account.go
-@@ -23,7 +23,7 @@ type Account struct {
- 
- func NewAccount() *Account {
- 	return &Account{
--		DisplayTitle: true,
--		DisplayVIP:   true,
-+		DisplayTitle: false,
-+		DisplayVIP:   false,
- 	}
- }
 diff --git a/kernel/conf/appearance.go b/kernel/conf/appearance.go
 index 1bc316a..68ae464 100644
 --- forkSrcPrefix/kernel/conf/appearance.go

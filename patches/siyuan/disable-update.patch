@@ -2,32 +2,17 @@ diff --git a/kernel/api/system.go b/kernel/api/system.go
 index 93f5876..31df9aa 100644
 --- forkSrcPrefix/kernel/api/system.go
 +++ forkDstPrefix/kernel/api/system.go
-@@ -412,16 +412,17 @@ func normalizeCustomEmojiPath(name, ext string) (string, error) {
- }
+@@ -422,9 +422,8 @@ func normalizeCustomEmojiPath(name, ext string) (string, error) {
+ var checkUpdate = contractHandler(apicontract.SystemCheckUpdate, func(c *gin.Context, request apicontract.SystemCheckUpdateRequest) (ret apicontract.Response[apicontract.Null]) {
+ 	ret = apicontract.Success(apicontract.Null{})
  
- func checkUpdate(c *gin.Context) {
--	ret := gulu.Ret.NewResult()
--	defer c.JSON(http.StatusOK, ret)
-+	// ret := gulu.Ret.NewResult()
-+	// defer c.JSON(http.StatusOK, ret)
- 
--	arg, ok := util.JsonArg(c, ret)
--	if !ok {
--		return
--	}
-+	// arg, ok := util.JsonArg(c, ret)
-+	// if !ok {
-+	// 	return
-+	// }
- 
--	showMsg := arg["showMsg"].(bool)
+-	showMsg := request.ShowMsg
 -	model.CheckUpdate(showMsg)
-+	// showMsg := arg["showMsg"].(bool)
-+	// model.CheckUpdate(showMsg)
-+	return
- }
- 
- func exportLog(c *gin.Context) {
++	// Update checks disabled by this build.
+ 	return
+ })
+
+ var exportLog = contractHandler(apicontract.SystemExportLog, func(c *gin.Context, request apicontract.EmptyRequest) (ret apicontract.Response[apicontract.SystemZipData]) {
 diff --git a/kernel/conf/system.go b/kernel/conf/system.go
 index 8bf0031..8fd9ba5 100644
 --- forkSrcPrefix/kernel/conf/system.go
