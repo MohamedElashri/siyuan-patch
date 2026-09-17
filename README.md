@@ -1,15 +1,10 @@
 # SiYuan Note - Modified Version
 
 [![Latest release](https://img.shields.io/github/v/release/MohamedElashri/siyuan-patch?label=latest%20release)](https://github.com/MohamedElashri/siyuan-patch/releases/latest)
+[![PC build](https://github.com/MohamedElashri/siyuan-patch/actions/workflows/release-pc.yml/badge.svg)](https://github.com/MohamedElashri/siyuan-patch/actions/workflows/release-pc.yml)
 [![Android build](https://github.com/MohamedElashri/siyuan-patch/actions/workflows/release-android.yml/badge.svg)](https://github.com/MohamedElashri/siyuan-patch/actions/workflows/release-android.yml)
 [![Docker build](https://github.com/MohamedElashri/siyuan-patch/actions/workflows/release-docker.yml/badge.svg)](https://github.com/MohamedElashri/siyuan-patch/actions/workflows/release-docker.yml)
 [![iOS build](https://github.com/MohamedElashri/siyuan-patch/actions/workflows/release-ios.yml/badge.svg)](https://github.com/MohamedElashri/siyuan-patch/actions/workflows/release-ios.yml)
-
-| Platform | Latest available version | Build status |
-| --- | --- | --- |
-| Android | [Latest APK](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-android-arm64.apk) | [![Android](https://github.com/MohamedElashri/siyuan-patch/actions/workflows/release-android.yml/badge.svg)](https://github.com/MohamedElashri/siyuan-patch/actions/workflows/release-android.yml) |
-| Docker | [`latest`](https://hub.docker.com/r/melashri/siyuan/tags) | [![Docker](https://github.com/MohamedElashri/siyuan-patch/actions/workflows/release-docker.yml/badge.svg)](https://github.com/MohamedElashri/siyuan-patch/actions/workflows/release-docker.yml) |
-| iOS | [Latest IPA](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-latest-ios.ipa) | [![iOS](https://github.com/MohamedElashri/siyuan-patch/actions/workflows/release-ios.yml/badge.svg)](https://github.com/MohamedElashri/siyuan-patch/actions/workflows/release-ios.yml) |
 
 This repository contains modified builds of [SiYuan Note](https://github.com/siyuan-note/siyuan), focusing on Linux, Windows, macOS, iOS, Android, and Docker server deployments. Linux and Windows desktop builds are available for both x86-64 and ARM64.
 
