@@ -22,14 +22,14 @@ index 4c80557..8c28456 100644
 -}, func(c *gin.Context) *apicontract.Response[*apicontract.SettingUser] {
 +var getCloudUser = contractHandler(apicontract.GetCloudUser, func(c *gin.Context, request apicontract.SettingCloudUserRequest) apicontract.Response[*apicontract.SettingUser] {
 +	user := &conf.User{
-+		UserId: "0",
-+		UserName: "_",
-+		UserAvatarURL: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
-+		UserTitles: []*conf.UserTitle{},
-+		UserCreateTime: "29991231 00:00:00",
-+		UserSiYuanProExpireTime: -1,
-+		UserToken: "token",
-+		UserTokenExpireTime: "32503593600",
++		UserId:                     "0",
++		UserName:                   "_",
++		UserAvatarURL:              "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
++		UserTitles:                 []*conf.UserTitle{},
++		UserCreateTime:             "29991231 00:00:00",
++		UserSiYuanProExpireTime:    -1,
++		UserToken:                  "token",
++		UserTokenExpireTime:        "32503593600",
 +		UserSiYuanSubscriptionType: 1,
 +		UserSiYuanOneTimePayStatus: 1,
 +	}
