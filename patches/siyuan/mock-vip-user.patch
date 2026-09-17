@@ -46,3 +46,38 @@ index 4c80557..8c28456 100644
  	ret := apicontract.Success((*apicontract.SettingUser)(nil))
  	return &ret
  })
+diff --git a/kernel/model/conf.go b/kernel/model/conf.go
+index 0000000..0000000 100644
+--- forkSrcPrefix/kernel/model/conf.go
++++ forkDstPrefix/kernel/model/conf.go
+@@ -1347,16 +1347,7 @@ func InitBoxes() {
+ func IsSubscriber() bool {
+-	u := Conf.GetUser()
+-	return nil != u && (-1 == u.UserSiYuanProExpireTime || 0 < u.UserSiYuanProExpireTime) && 0 == u.UserSiYuanSubscriptionStatus
++	return true
+ }
+ 
+ func IsPaidUser() bool {
+-	if IsSubscriber() {
+-		return true
+-	}
+-
+-	u := Conf.GetUser()
+-	if nil == u {
+-		return false
+-	}
+-	return 1 == u.UserSiYuanOneTimePayStatus
++	return true
+ }
+diff --git a/app/src/util/needSubscribe.ts b/app/src/util/needSubscribe.ts
+index 0000000..0000000 100644
+--- forkSrcPrefix/app/src/util/needSubscribe.ts
++++ forkDstPrefix/app/src/util/needSubscribe.ts
+@@ -5,2 +5,3 @@ import {isInIOS} from "../protyle/util/compatibility";
+ export const needSubscribe = (tip = window.siyuan.languages._kernel[29]) => {
++    return false;
+     if (window.siyuan.user && (window.siyuan.user.userSiYuanProExpireTime === -1 || window.siyuan.user.userSiYuanProExpireTime > 0)) {
+@@ -22,2 +23,3 @@ export const needSubscribe = (tip = window.siyuan.languages._kernel[29]) => {
+ export const isPaidUser = () => {
++    return true;
+     return window.siyuan.user && (0 === window.siyuan.user.userSiYuanSubscriptionStatus || 1 === window.siyuan.user.userSiYuanOneTimePayStatus);
