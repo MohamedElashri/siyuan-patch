@@ -52,7 +52,7 @@ docker pull melashri/siyuan:latest
 
 ## Feature Modifications
 
-### Enhanced Functionality
+### Functionality
 The modified version includes local access to premium features that typically require a VIP subscription in the official version. These features include:
 
 - Support for third-party S3 storage for data synchronization and backup
