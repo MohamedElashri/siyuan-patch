@@ -178,6 +178,40 @@ jobs:
           asset_content_type: application/octet-stream
           overwrite: true
 
+  update-readme:
+    name: Update README with version
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # sanad: ref=v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update README.md with version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ github.event.inputs.version }}
+        run: |
+          VERSION="${VERSION#v}"
+          # Replace siyuan-latest- with siyuan-${VERSION}- in README.md
+          sed -i "s|siyuan-latest-|siyuan-${VERSION}-|g" README.md
+          
+          # Verify changes
+          git diff README.md
+          
+          # Commit and push if there are changes
+          if ! git diff --quiet README.md; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add README.md
+            git commit -m "chore: update README with version ${VERSION}"
+            git push
+          else
+            echo "No changes to README.md"
+          fi
+
   checksums:
     name: Update release checksums
     needs: build

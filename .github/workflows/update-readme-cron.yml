@@ -1,0 +1,63 @@
+name: update-readme-cron
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    name: Update README with latest release version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # sanad: ref=v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get latest release version
+        id: get_version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LATEST=$(gh release list --repo "${{ github.repository }}" --limit 1 --json tagName -q '.[0].tagName')
+          if [ -z "$LATEST" ]; then
+            echo "No releases found"
+            exit 1
+          fi
+          echo "Latest release: $LATEST"
+          echo "version=${LATEST#v}" >> $GITHUB_OUTPUT
+
+      - name: Check if README already has latest version
+        id: check_readme
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          if grep -q "siyuan-${VERSION}-" README.md; then
+            echo "README already up to date with version ${VERSION}"
+            echo "needs_update=false" >> $GITHUB_OUTPUT
+          else
+            echo "README needs update to version ${VERSION}"
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update README.md with latest version
+        if: ${{ steps.check_readme.outputs.needs_update == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.get_version.outputs.version }}
+        run: |
+          # Replace any siyuan-vX.Y.Z- or siyuan-latest- with latest version
+          sed -i "s|siyuan-v[0-9][0-9.]*-|siyuan-${VERSION}-|g" README.md
+          sed -i "s|siyuan-latest-|siyuan-${VERSION}-|g" README.md
+          
+          # Verify changes
+          git diff README.md
+          
+          # Commit and push
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "chore: update README with latest version ${VERSION}"
+          git push
