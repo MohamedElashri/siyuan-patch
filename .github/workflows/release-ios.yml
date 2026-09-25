@@ -195,7 +195,8 @@ jobs:
           VERSION: ${{ github.event.inputs.version }}
         run: |
           VERSION="${VERSION#v}"
-          # Replace siyuan-latest- with siyuan-${VERSION}- in README.md
+          # Replace any existing version or latest with new version
+          sed -i "s|siyuan-v[0-9][0-9.]*\-|siyuan-${VERSION}-|g" README.md
           sed -i "s|siyuan-latest-|siyuan-${VERSION}-|g" README.md
           
           # Verify changes
