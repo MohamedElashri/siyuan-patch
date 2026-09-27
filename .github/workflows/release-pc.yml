@@ -29,6 +29,9 @@ jobs:
             unpacked_dir: "linux-unpacked"
             suffix: "linux.tar.gz"
             appimage_suffix: "linux.AppImage"
+            appimage_arch: "x86_64"
+            appimagetool_sha256: "ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0"
+            appimage_runtime_sha256: "2fca8b443c92510f1483a883f60061ad09b46b978b2631c807cd873a47ec260d"
             rpm_suffix: "linux.rpm"
             electron_config: "electron-builder-linux.yml"
             electron_arch: "x64"
@@ -44,6 +47,9 @@ jobs:
             unpacked_dir: "linux-arm64-unpacked"
             suffix: "linux-arm64.tar.gz"
             appimage_suffix: "linux-arm64.AppImage"
+            appimage_arch: "aarch64"
+            appimagetool_sha256: "f0837e7448a0c1e4e650a93bb3e85802546e60654ef287576f46c71c126a9158"
+            appimage_runtime_sha256: "00cbdfcf917cc6c0ff6d3347d59e0ca1f7f45a6df1a428a0d6d8a78664d87444"
             rpm_suffix: "linux-arm64.rpm"
             electron_config: "electron-builder-linux-arm64.yml"
             electron_arch: "arm64"
@@ -227,6 +233,49 @@ jobs:
         run: pnpm run ${{ matrix.config.electron_args }}
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan/app
 
+      - name: Repack AppImage with update information
+        if: matrix.config.goos == 'linux'
+        env:
+          APPIMAGE_ARCH: ${{ matrix.config.appimage_arch }}
+          APPIMAGETOOL_SHA256: ${{ matrix.config.appimagetool_sha256 }}
+          APPIMAGE_RUNTIME_SHA256: ${{ matrix.config.appimage_runtime_sha256 }}
+          APPIMAGE_SUFFIX: ${{ matrix.config.appimage_suffix }}
+          UPDATE_INFORMATION: zsync|https://github.com/${{ github.repository }}/releases/latest/download/siyuan-${{ matrix.config.appimage_arch }}.AppImage.zsync
+        run: |
+          set -euo pipefail
+
+          build_dir="${GITHUB_WORKSPACE}/siyuan-note/siyuan/app/build"
+          source_appimage="$(find "${build_dir}" -maxdepth 1 -type f -name "siyuan-*-${APPIMAGE_SUFFIX}" -print -quit)"
+          if [ -z "${source_appimage}" ]; then
+            echo "Could not find the Electron Builder AppImage"
+            exit 1
+          fi
+
+          tool="${RUNNER_TEMP}/appimagetool-${APPIMAGE_ARCH}.AppImage"
+          curl --fail --location --retry 3 \
+            "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-${APPIMAGE_ARCH}.AppImage" \
+            --output "${tool}"
+          echo "${APPIMAGETOOL_SHA256}  ${tool}" | sha256sum --check --status
+          chmod +x "${source_appimage}" "${tool}"
+
+          runtime="${RUNNER_TEMP}/runtime-${APPIMAGE_ARCH}"
+          curl --fail --location --retry 3 \
+            "https://github.com/AppImage/type2-runtime/releases/download/20251108/runtime-${APPIMAGE_ARCH}" \
+            --output "${runtime}"
+          echo "${APPIMAGE_RUNTIME_SHA256}  ${runtime}" | sha256sum --check --status
+
+          work_dir="${RUNNER_TEMP}/siyuan-appimage-${APPIMAGE_ARCH}"
+          mkdir -p "${work_dir}"
+          cd "${work_dir}"
+          "${source_appimage}" --appimage-extract
+
+          output_appimage="${build_dir}/siyuan-${APPIMAGE_ARCH}.AppImage"
+          ARCH="${APPIMAGE_ARCH}" APPIMAGETOOL_EXTRACT_AND_RUN=1 \
+            "${tool}" --runtime-file "${runtime}" squashfs-root \
+            -u "${UPDATE_INFORMATION}" "${output_appimage}"
+          test -s "${output_appimage}"
+          test -s "${output_appimage}.zsync"
+
       - name: Create DEB Package
         if: matrix.config.goos == 'linux'
         run: |
@@ -310,8 +359,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_current_release.outputs.upload_url }}
-          asset_name: siyuan-${{ github.event.inputs.version }}-${{ matrix.config.appimage_suffix }}
-          asset_path: ${{ github.workspace }}/siyuan-note/siyuan/app/build/siyuan-*-${{ matrix.config.appimage_suffix }}
+          asset_name: siyuan-${{ matrix.config.appimage_arch }}.AppImage
+          asset_path: ${{ github.workspace }}/siyuan-note/siyuan/app/build/siyuan-${{ matrix.config.appimage_arch }}.AppImage
+          asset_content_type: application/octet-stream
+          overwrite: true
+
+      - name: Upload AppImage update information
+        if: matrix.config.goos == 'linux'
+        uses: shogo82148/actions-upload-release-asset@aaba0f56bdbc1071f4af234d5cb16055e8a400de # sanad: ref=v1.10.4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_current_release.outputs.upload_url }}
+          asset_name: siyuan-${{ matrix.config.appimage_arch }}.AppImage.zsync
+          asset_path: ${{ github.workspace }}/siyuan-note/siyuan/app/build/siyuan-${{ matrix.config.appimage_arch }}.AppImage.zsync
           asset_content_type: application/octet-stream
           overwrite: true
 
@@ -377,11 +438,33 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ github.event.inputs.version }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           VERSION="${VERSION#v}"
           # Replace any existing version or latest with new version
           sed -i "s|siyuan-v[0-9][0-9.]*\-|siyuan-${VERSION}-|g" README.md
           sed -i "s|siyuan-latest-|siyuan-${VERSION}-|g" README.md
+
+          # AppImages use stable architecture-specific asset names.
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          readme = Path("README.md")
+          lines = readme.read_text().splitlines(keepends=True)
+          appimage_rows = [i for i, line in enumerate(lines) if line.startswith("| AppImage |")]
+          if len(appimage_rows) != 1:
+              raise SystemExit(f"Expected one AppImage row in README.md, found {len(appimage_rows)}")
+
+          repository = os.environ["REPOSITORY"]
+          download_base = f"https://github.com/{repository}/releases/latest/download"
+          newline = "\n" if lines[appimage_rows[0]].endswith("\n") else ""
+          lines[appimage_rows[0]] = (
+              f"| AppImage | [Download]({download_base}/siyuan-x86_64.AppImage) "
+              f"| [Download]({download_base}/siyuan-aarch64.AppImage) |{newline}"
+          )
+          readme.write_text("".join(lines))
+          PY
           
           # Verify changes
           git diff README.md

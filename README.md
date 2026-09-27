@@ -19,7 +19,7 @@ Choose the package format for your distribution and architecture:
 | Package format | x86_64 | ARM64 |
 | --- | --- | --- |
 | Portable tarball | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-3.8.5-linux.tar.gz) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-3.8.5-linux-arm64.tar.gz) |
-| AppImage | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-3.8.5-linux.AppImage) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-3.8.5-linux-arm64.AppImage) |
+| AppImage | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-x86_64.AppImage) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-aarch64.AppImage) |
 | Debian / Ubuntu (`.deb`) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-3.8.5-amd64.deb) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-3.8.5-arm64.deb) |
 | Fedora / RHEL (`.rpm`) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-3.8.5-linux.rpm) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-3.8.5-linux-arm64.rpm) |
 | Arch Linux (`.pkg.tar.zst`) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-3.8.5-archlinux-x86_64.pkg.tar.zst) | [Download](https://github.com/MohamedElashri/siyuan-patch/releases/latest/download/siyuan-3.8.5-archlinux-aarch64.pkg.tar.zst) |
