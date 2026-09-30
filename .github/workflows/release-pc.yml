@@ -273,6 +273,13 @@ jobs:
           ARCH="${APPIMAGE_ARCH}" APPIMAGETOOL_EXTRACT_AND_RUN=1 \
             "${tool}" --runtime-file "${runtime}" squashfs-root \
             -u "${UPDATE_INFORMATION}" "${output_appimage}"
+
+          # Debug: list files to verify outputs
+          echo "=== Build directory contents ==="
+          ls -la "${build_dir}/"
+          echo "=== Expected output ==="
+          ls -la "${output_appimage}" "${output_appimage}.zsync" 2>&1 || true
+
           test -s "${output_appimage}"
           test -s "${output_appimage}.zsync"
 
