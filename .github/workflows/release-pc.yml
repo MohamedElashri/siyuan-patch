@@ -227,7 +227,7 @@ jobs:
         if: matrix.config.goos == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y fakeroot dpkg-dev imagemagick libarchive-tools rpm zstd
+          sudo apt-get install -y fakeroot dpkg-dev imagemagick libarchive-tools rpm zstd zsync
 
       - name: Building Electron
         run: pnpm run ${{ matrix.config.electron_args }}
@@ -270,25 +270,31 @@ jobs:
           "${source_appimage}" --appimage-extract
 
           output_appimage="${build_dir}/siyuan-${APPIMAGE_ARCH}.AppImage"
+          cd "${build_dir}"
           ARCH="${APPIMAGE_ARCH}" APPIMAGETOOL_EXTRACT_AND_RUN=1 \
-            "${tool}" --runtime-file "${runtime}" squashfs-root \
+            "${tool}" --runtime-file "${runtime}" "${work_dir}/squashfs-root" \
             -u "${UPDATE_INFORMATION}" "${output_appimage}"
 
-          # Generate zsync file manually since appimagetool 1.9.1 doesn't always create it
-          if command -v zsyncmake >/dev/null 2>&1; then
+          # Ensure the zsync file is placed in build_dir
+          if [ ! -f "${output_appimage}.zsync" ] && [ -f "${work_dir}/siyuan-${APPIMAGE_ARCH}.AppImage.zsync" ]; then
+            mv "${work_dir}/siyuan-${APPIMAGE_ARCH}.AppImage.zsync" "${output_appimage}.zsync"
+          fi
+
+          # If appimagetool did not create the zsync file, generate it explicitly specifying output path
+          if [ ! -f "${output_appimage}.zsync" ]; then
             echo "Generating zsync file with zsyncmake..."
-            zsyncmake -u "${UPDATE_INFORMATION}" "${output_appimage}"
-          else
-            echo "Installing zsyncmake..."
-            apt-get update && apt-get install -y zsync
-            zsyncmake -u "${UPDATE_INFORMATION}" "${output_appimage}"
+            if ! command -v zsyncmake >/dev/null 2>&1; then
+              echo "Installing zsyncmake..."
+              sudo apt-get update && sudo apt-get install -y zsync
+            fi
+            zsyncmake -u "${UPDATE_INFORMATION}" -o "${output_appimage}.zsync" "${output_appimage}"
           fi
 
           # Debug: list files to verify outputs
           echo "=== Build directory contents ==="
           ls -la "${build_dir}/"
           echo "=== Expected output ==="
-          ls -la "${output_appimage}" "${output_appimage}.zsync" 2>&1 || true
+          ls -la "${output_appimage}" "${output_appimage}.zsync"
 
           test -s "${output_appimage}"
           test -s "${output_appimage}.zsync"
