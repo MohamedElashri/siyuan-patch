@@ -111,16 +111,10 @@ jobs:
       - name: Fix Gradle repositories (replace unreliable aliyun mirrors)
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan-android
         run: |
-          # Fix root build.gradle - move google() and mavenCentral() before aliyun, add retry
-          sed -i "1,/repositories {/{
-            /repositories {/a\\
-                  google()\\
-                  mavenCentral()\\
-          }" build.gradle
-          # Replace aliyun maven with commented version to keep as fallback
-          sed -i "s|maven { url 'https://maven.aliyun.com/repository/google' }|// maven { url 'https://maven.aliyun.com/repository/google' }|g" build.gradle
-          sed -i "s|maven { url 'https://maven.aliyun.com/repository/public' }|// maven { url 'https://maven.aliyun.com/repository/public' }|g" build.gradle
-          sed -i "s|maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }|// maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }|g" build.gradle
+          # Fix root build.gradle - replace aliyun repos with google/mavenCentral as primary
+          sed -i "s|maven { url 'https://maven.aliyun.com/repository/google' }|google()|g" build.gradle
+          sed -i "s|maven { url 'https://maven.aliyun.com/repository/public' }|mavenCentral()|g" build.gradle
+          sed -i "s|maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }||g" build.gradle
           
           # Fix app/build.gradle - add google() and mavenCentral() to repositories
           sed -i "/repositories {/a\\
