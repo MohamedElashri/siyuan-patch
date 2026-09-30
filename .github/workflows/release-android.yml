@@ -108,30 +108,30 @@ jobs:
         run: |
           zip -r ${{ github.workspace }}/siyuan-note/siyuan-android/app/src/main/assets/app.zip ./appearance ./guide ./stage ./changelogs
 
-      - name: Configure Gradle repositories
+      - name: Fix Gradle repositories (replace unreliable aliyun mirrors)
+        working-directory: ${{ github.workspace }}/siyuan-note/siyuan-android
         run: |
-          mkdir -p ${{ github.workspace }}/siyuan-note/siyuan-android/gradle
-          cat > ${{ github.workspace }}/siyuan-note/siyuan-android/gradle/repository-retry.gradle << 'EOF'
-          allprojects {
-              repositories {
-                  maven { url 'https://maven.aliyun.com/repository/google' }
-                  maven { url 'https://maven.aliyun.com/repository/public' }
-                  maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
-                  google()
-                  mavenCentral()
-                  maven { url 'https://jitpack.io' }
-              }
-          }
-          buildscript {
-              repositories {
-                  maven { url 'https://maven.aliyun.com/repository/google' }
-                  maven { url 'https://maven.aliyun.com/repository/public' }
-                  maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
-                  google()
-                  mavenCentral()
-              }
-          }
-          EOF
+          # Fix root build.gradle - move google() and mavenCentral() before aliyun, add retry
+          sed -i "1,/repositories {/{
+            /repositories {/a\\
+                  google()\\
+                  mavenCentral()\\
+          }" build.gradle
+          # Replace aliyun maven with commented version to keep as fallback
+          sed -i "s|maven { url 'https://maven.aliyun.com/repository/google' }|// maven { url 'https://maven.aliyun.com/repository/google' }|g" build.gradle
+          sed -i "s|maven { url 'https://maven.aliyun.com/repository/public' }|// maven { url 'https://maven.aliyun.com/repository/public' }|g" build.gradle
+          sed -i "s|maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }|// maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }|g" build.gradle
+          
+          # Fix app/build.gradle - add google() and mavenCentral() to repositories
+          sed -i "/repositories {/a\\
+                  google()\\
+                  mavenCentral()\\
+          " app/build.gradle
+          
+          echo "=== Root build.gradle ==="
+          cat build.gradle
+          echo "=== App build.gradle ==="
+          cat app/build.gradle
 
       - name: Decode Keystore
         id: decode_keystore
@@ -145,7 +145,7 @@ jobs:
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan-android
         run: |
           chmod 777 ./gradlew
-          ./gradlew :app:assembleDebug --init-script gradle/repository-retry.gradle --refresh-dependencies --no-daemon
+          ./gradlew :app:assembleDebug --refresh-dependencies --no-daemon
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
 
