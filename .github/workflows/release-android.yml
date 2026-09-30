@@ -147,11 +147,6 @@ jobs:
           chmod 777 ./gradlew
           ./gradlew :app:assembleDebug --init-script gradle/repository-retry.gradle --refresh-dependencies --no-daemon
         env:
-        working-directory: ${{ github.workspace }}/siyuan-note/siyuan-android
-        run: |
-          chmod 777 ./gradlew
-          ./gradlew :app:assembleDebug
-        env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
 
       - uses: joutvhu/get-release@8c3531bba0d249f5e7c3d7e1954d34db9edf2a90 # sanad: ref=v1
