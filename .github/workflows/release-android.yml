@@ -108,6 +108,31 @@ jobs:
         run: |
           zip -r ${{ github.workspace }}/siyuan-note/siyuan-android/app/src/main/assets/app.zip ./appearance ./guide ./stage ./changelogs
 
+      - name: Configure Gradle repositories
+        run: |
+          mkdir -p ${{ github.workspace }}/siyuan-note/siyuan-android/gradle
+          cat > ${{ github.workspace }}/siyuan-note/siyuan-android/gradle/repository-retry.gradle << 'EOF'
+          allprojects {
+              repositories {
+                  maven { url 'https://maven.aliyun.com/repository/google' }
+                  maven { url 'https://maven.aliyun.com/repository/public' }
+                  maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+                  google()
+                  mavenCentral()
+                  maven { url 'https://jitpack.io' }
+              }
+          }
+          buildscript {
+              repositories {
+                  maven { url 'https://maven.aliyun.com/repository/google' }
+                  maven { url 'https://maven.aliyun.com/repository/public' }
+                  maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+                  google()
+                  mavenCentral()
+              }
+          }
+          EOF
+
       - name: Decode Keystore
         id: decode_keystore
         uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # sanad: ref=v2.0
@@ -117,6 +142,11 @@ jobs:
           encodedString: ${{ secrets.KEYSTORE }}
 
       - name: Building Android
+        working-directory: ${{ github.workspace }}/siyuan-note/siyuan-android
+        run: |
+          chmod 777 ./gradlew
+          ./gradlew :app:assembleDebug --init-script gradle/repository-retry.gradle --refresh-dependencies --no-daemon
+        env:
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan-android
         run: |
           chmod 777 ./gradlew
