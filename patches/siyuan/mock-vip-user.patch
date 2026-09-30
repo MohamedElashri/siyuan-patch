@@ -7,7 +7,7 @@ index 4c80557..8c28456 100644
  })
  
 -var getCloudUser = contractHandler(apicontract.GetCloudUser, func(c *gin.Context, request apicontract.SettingCloudUserRequest) apicontract.Response[*apicontract.SettingUser] {
--	user, err := model.RefreshUser(request.Token)
+-	user, err := model.GetCloudUser(request.Token, request.Cached)
 -	data := settingUserPayload(user)
 -	if err == nil {
 -		return apicontract.Success(data)
@@ -50,7 +50,7 @@ diff --git a/kernel/model/conf.go b/kernel/model/conf.go
 index 0000000..0000000 100644
 --- forkSrcPrefix/kernel/model/conf.go
 +++ forkDstPrefix/kernel/model/conf.go
-@@ -1347,16 +1347,7 @@ func InitBoxes() {
+@@ -1358,16 +1358,7 @@ func InitBoxes() {
  func IsSubscriber() bool {
 -	u := Conf.GetUser()
 -	return nil != u && (-1 == u.UserSiYuanProExpireTime || 0 < u.UserSiYuanProExpireTime) && 0 == u.UserSiYuanSubscriptionStatus
@@ -81,3 +81,4 @@ index 0000000..0000000 100644
  export const isPaidUser = () => {
 +    return true;
      return window.siyuan.user && (0 === window.siyuan.user.userSiYuanSubscriptionStatus || 1 === window.siyuan.user.userSiYuanOneTimePayStatus);
+ }
