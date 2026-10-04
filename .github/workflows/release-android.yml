@@ -151,7 +151,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Android
-        uses: shogo82148/actions-upload-release-asset@aaba0f56bdbc1071f4af234d5cb16055e8a400de # sanad: ref=v1.10.4
+        uses: shogo82148/actions-upload-release-asset@eee382aaa9c6b13fd841694e63175fac2e2a1b48 # sanad: ref=v1.10.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
