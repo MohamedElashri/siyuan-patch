@@ -118,26 +118,32 @@ jobs:
 
       - name: clone origin and apply patches
         shell: bash
+        env:
+          VERSION: ${{ github.event.inputs.version }}
         run: |
           set -euo pipefail
           git config --global core.autocrlf false
-          mkdir -p ${{ github.workspace }}/go
-          cd ${{ github.workspace }}/siyuan-note/
+          workspace="${GITHUB_WORKSPACE}"
+          if [ "${RUNNER_OS}" = "Windows" ]; then
+            workspace="$(cygpath -u "${workspace}")"
+          fi
+          mkdir -p "${workspace}/go"
+          cd "${workspace}/siyuan-note"
 
           # Clone the repository without checking out any branch
           git clone https://github.com/siyuan-note/siyuan.git
           cd siyuan
           
           # Fetch the specific tag/version
-          git fetch origin ${{ github.event.inputs.version }}
+          git fetch origin "${VERSION}"
           
           # Hard reset to the tag/version
           git reset --hard FETCH_HEAD
           
           # Stop the build if any required modification no longer applies.
-          git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/disable-update.patch
-          git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/default-config.patch
-          git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/mock-vip-user.patch
+          git apply "${workspace}/siyuan-note/patches/siyuan/disable-update.patch"
+          git apply "${workspace}/siyuan-note/patches/siyuan/default-config.patch"
+          git apply "${workspace}/siyuan-note/patches/siyuan/mock-vip-user.patch"
 
           git status
 
