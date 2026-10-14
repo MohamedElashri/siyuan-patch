@@ -1,26 +1,31 @@
+diff --git a/app/src/util/needSubscribe.ts b/app/src/util/needSubscribe.ts
+index 8681b9e..3dd14e3 100644
+--- a/app/src/util/needSubscribe.ts
++++ b/app/src/util/needSubscribe.ts
+@@ -3,6 +3,7 @@ import {getCloudURL} from "../config/util/about";
+ import {isInIOS} from "../protyle/util/compatibility";
+ 
+ export const needSubscribe = (tip = window.siyuan.languages._kernel[29]) => {
++    return false;
+     if (window.siyuan.user && (window.siyuan.user.userSiYuanProExpireTime === -1 || window.siyuan.user.userSiYuanProExpireTime > 0)) {
+         // 终身会员或订阅未过期
+         return false;
+@@ -20,5 +21,6 @@ export const needSubscribe = (tip = window.siyuan.languages._kernel[29]) => {
+  * 判断是否可以使用第三方同步
+  */
+ export const isPaidUser = () => {
++    return true;
+     return window.siyuan.user && (0 === window.siyuan.user.userSiYuanSubscriptionStatus || 1 === window.siyuan.user.userSiYuanOneTimePayStatus);
+ };
 diff --git a/kernel/api/setting.go b/kernel/api/setting.go
-index 4c80557..8c28456 100644
---- forkSrcPrefix/kernel/api/setting.go
-+++ forkDstPrefix/kernel/api/setting.go
-@@ -824,23 +824,29 @@ var getPublish = contractHandler(apicontract.GetPublish, func(c *gin.Context, request apicontract.EmptyRequest) apicontract.Response[apicontract.SettingPublishData] {
- 	return apicontract.Success(apicontract.SettingPublishData{Port: port, Publish: settingPublishPayload(model.Conf.Publish)})
+index d5470a9..f330991 100644
+--- a/kernel/api/setting.go
++++ b/kernel/api/setting.go
+@@ -699,18 +699,24 @@ var getPublish = contractHandler(apicontract.GetPublish, func(c *gin.Context, re
  })
  
--var getCloudUser = contractHandler(apicontract.GetCloudUser, func(c *gin.Context, request apicontract.SettingCloudUserRequest) apicontract.Response[*apicontract.SettingUser] {
+ var getCloudUser = contractHandler(apicontract.GetCloudUser, func(c *gin.Context, request apicontract.SettingCloudUserRequest) apicontract.Response[*apicontract.SettingUser] {
 -	user, err := model.GetCloudUser(request.Token, request.Cached)
--	data := settingUserPayload(user)
--	if err == nil {
--		return apicontract.Success(data)
--	}
--	if model.IsInvalidUserRefresh(err) {
--		return apicontract.GetCloudUser.FailureWithData(255, model.Conf.Language(19), nil)
--	}
--	if model.IsCloudAssetSourceChange(err) {
--		return apicontract.GetCloudUser.FailureWithData(1, err.Error(), data)
--	}
--	return apicontract.GetCloudUser.FailureWithData(1, model.Conf.Language(18), data)
--}, func(c *gin.Context) *apicontract.Response[*apicontract.SettingUser] {
-+var getCloudUser = contractHandler(apicontract.GetCloudUser, func(c *gin.Context, request apicontract.SettingCloudUserRequest) apicontract.Response[*apicontract.SettingUser] {
 +	user := &conf.User{
 +		UserId:                     "0",
 +		UserName:                   "_",
@@ -34,23 +39,31 @@ index 4c80557..8c28456 100644
 +		UserSiYuanOneTimePayStatus: 1,
 +	}
 +	model.Conf.SetUser(user)
-+	data := settingUserPayload(user)
+ 	data := settingUserPayload(user)
+-	if err == nil {
+-		return apicontract.Success(data)
+-	}
+-	if model.IsInvalidUserRefresh(err) {
+-		return apicontract.GetCloudUser.FailureWithData(255, model.Conf.Language(19), nil)
+-	}
+-	if model.IsCloudAssetSourceChange(err) {
+-		return apicontract.GetCloudUser.FailureWithData(1, err.Error(), data)
+-	}
+-	return apicontract.GetCloudUser.FailureWithData(1, model.Conf.Language(18), data)
 +	dataBytes, _ := gulu.JSON.MarshalJSON(user)
 +	model.Conf.UserData = util.AESEncrypt(string(dataBytes))
 +	model.Conf.Save()
 +	return apicontract.Success(data)
-+}, func(c *gin.Context) *apicontract.Response[*apicontract.SettingUser] {
+ }, func(c *gin.Context) *apicontract.Response[*apicontract.SettingUser] {
  	if model.IsAdminRoleContext(c) {
  		return nil
- 	}
- 	ret := apicontract.Success((*apicontract.SettingUser)(nil))
- 	return &ret
- })
 diff --git a/kernel/model/conf.go b/kernel/model/conf.go
-index 0000000..0000000 100644
---- forkSrcPrefix/kernel/model/conf.go
-+++ forkDstPrefix/kernel/model/conf.go
-@@ -1358,16 +1358,7 @@ func InitBoxes() {
+index aad43e7..d72decd 100644
+--- a/kernel/model/conf.go
++++ b/kernel/model/conf.go
+@@ -1132,20 +1132,11 @@ func InitBoxes() {
+ }
+ 
  func IsSubscriber() bool {
 -	u := Conf.GetUser()
 -	return nil != u && (-1 == u.UserSiYuanProExpireTime || 0 < u.UserSiYuanProExpireTime) && 0 == u.UserSiYuanSubscriptionStatus
@@ -69,16 +82,5 @@ index 0000000..0000000 100644
 -	return 1 == u.UserSiYuanOneTimePayStatus
 +	return true
  }
-diff --git a/app/src/util/needSubscribe.ts b/app/src/util/needSubscribe.ts
-index 0000000..0000000 100644
---- forkSrcPrefix/app/src/util/needSubscribe.ts
-+++ forkDstPrefix/app/src/util/needSubscribe.ts
-@@ -5,2 +5,3 @@ import {isInIOS} from "../protyle/util/compatibility";
- export const needSubscribe = (tip = window.siyuan.languages._kernel[29]) => {
-+    return false;
-     if (window.siyuan.user && (window.siyuan.user.userSiYuanProExpireTime === -1 || window.siyuan.user.userSiYuanProExpireTime > 0)) {
-@@ -22,2 +23,3 @@ export const needSubscribe = (tip = window.siyuan.languages._kernel[29]) => {
- export const isPaidUser = () => {
-+    return true;
-     return window.siyuan.user && (0 === window.siyuan.user.userSiYuanSubscriptionStatus || 1 === window.siyuan.user.userSiYuanOneTimePayStatus);
- }
+ 
+ const (

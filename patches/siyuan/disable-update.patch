@@ -1,8 +1,8 @@
 diff --git a/kernel/api/system.go b/kernel/api/system.go
-index 93f5876..31df9aa 100644
---- forkSrcPrefix/kernel/api/system.go
-+++ forkDstPrefix/kernel/api/system.go
-@@ -422,9 +422,8 @@ func normalizeCustomEmojiPath(name, ext string) (string, error) {
+index edf151e..258d4de 100644
+--- a/kernel/api/system.go
++++ b/kernel/api/system.go
+@@ -425,8 +425,7 @@ func normalizeCustomEmojiPath(name, ext string) (string, error) {
  var checkUpdate = contractHandler(apicontract.SystemCheckUpdate, func(c *gin.Context, request apicontract.SystemCheckUpdateRequest) (ret apicontract.Response[apicontract.Null]) {
  	ret = apicontract.Success(apicontract.Null{})
  
@@ -11,15 +11,14 @@ index 93f5876..31df9aa 100644
 +	// Update checks disabled by this build.
  	return
  })
-
- var exportLog = contractHandler(apicontract.SystemExportLog, func(c *gin.Context, request apicontract.EmptyRequest) (ret apicontract.Response[apicontract.SystemZipData]) {
+ 
 diff --git a/kernel/conf/system.go b/kernel/conf/system.go
-index 8bf0031..8fd9ba5 100644
---- forkSrcPrefix/kernel/conf/system.go
-+++ forkDstPrefix/kernel/conf/system.go
-@@ -77,7 +77,7 @@ func NewSystem() *System {
- 		Name:               util.GetDeviceName(),
- 		KernelVersion:      util.Ver,
+index c1f30b5..24eca99 100644
+--- a/kernel/conf/system.go
++++ b/kernel/conf/system.go
+@@ -73,7 +73,7 @@ type Onboarding struct {
+ func NewSystem() *System {
+ 	return &System{
  		NetworkProxy:       &NetworkProxy{},
 -		DownloadInstallPkg: true,
 +		DownloadInstallPkg: false,
@@ -27,10 +26,10 @@ index 8bf0031..8fd9ba5 100644
  	}
  }
 diff --git a/kernel/model/mount.go b/kernel/model/mount.go
-index dba3aff..9b491b9 100644
---- forkSrcPrefix/kernel/model/mount.go
-+++ forkDstPrefix/kernel/model/mount.go
-@@ -440,8 +440,8 @@ func mountBox(boxID string) (alreadyMount bool, err error) {
+index 6961d9c..a869b3f 100644
+--- a/kernel/model/mount.go
++++ b/kernel/model/mount.go
+@@ -567,8 +567,8 @@ func mountBox(boxID string) (alreadyMount bool, err error) {
  		task.AppendAsyncTaskWithDelay(task.PushMsg, 3*time.Second, util.PushErrMsg, Conf.Language(244), 7000)
  		go func() {
  			// 每次打开帮助文档时自动检查版本更新并提醒 https://github.com/siyuan-note/siyuan/issues/5057
@@ -42,18 +41,25 @@ index dba3aff..9b491b9 100644
  	}
  
 diff --git a/kernel/model/updater.go b/kernel/model/updater.go
-index 8a39a62..1bcaab8 100644
---- forkSrcPrefix/kernel/model/updater.go
-+++ forkDstPrefix/kernel/model/updater.go
-@@ -282,6 +282,11 @@ func skipNewVerInstallPkg() bool {
+index 480277b..70352ed 100644
+--- a/kernel/model/updater.go
++++ b/kernel/model/updater.go
+@@ -31,6 +31,7 @@ import (
+ 	"github.com/88250/gulu"
+ 	"github.com/imroc/req/v3"
+ 	"github.com/siyuan-note/logging"
++	"github.com/siyuan-note/siyuan/kernel/conf"
+ 	"github.com/siyuan-note/siyuan/kernel/util"
+ 	"golang.org/x/mod/semver"
+ )
+@@ -303,6 +304,10 @@ func skipNewVerInstallPkg() bool {
  		}
  	}
  
-+	// Conf.System.DownloadInstallPkg(自动下载更新安装包) 强制赋值为false
-+	if Conf.System.DownloadInstallPkg {
-+		Conf.System.DownloadInstallPkg = false
-+		Conf.Save()
++	// Disable automatic update downloads, including for existing configurations.
++	if confSystemSnapshot.DownloadInstallPkg {
++		confSystemSnapshot = UpdateSystemConf(func(s *conf.System) { s.DownloadInstallPkg = false })
 +	}
- 	if skipInstallPkgPlatformCached == 1 || !Conf.System.DownloadInstallPkg {
+ 	if skipInstallPkgPlatformCached == 1 || !confSystemSnapshot.DownloadInstallPkg {
  		return true
  	}
