@@ -6,10 +6,22 @@ on:
         description: "release version/tag"
         required: true
 
+concurrency:
+  group: release-docker-${{ inputs.version }}
+  cancel-in-progress: false
+
 jobs:
   build:
-    name: build
-    runs-on: ubuntu-latest
+    name: Build ${{ matrix.arch }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: amd64
+          - os: ubuntu-24.04-arm
+            arch: arm64
     permissions:
       packages: write
       contents: read
@@ -57,9 +69,38 @@ jobs:
         run: |
           docker buildx build \
             --push \
-            --platform linux/amd64,linux/arm64 \
-            -t ${{ secrets.DOCKER_HUB_USER }}/siyuan:latest \
-            -t ${{ secrets.DOCKER_HUB_USER }}/siyuan:${{ github.event.inputs.version }} \
+            --platform "linux/${ARCH}" \
+            -t "${DOCKER_HUB_USER}/siyuan:${VERSION}-${ARCH}" \
             .
         env:
           DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+          VERSION: ${{ inputs.version }}
+          ARCH: ${{ matrix.arch }}
+
+  publish:
+    name: Publish multi-architecture image
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # sanad: ref=v4.4.1
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # sanad: ref=v4
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_PWD }}
+
+      - name: Publish version and latest tags
+        env:
+          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          image="${DOCKER_HUB_USER}/siyuan"
+          docker buildx imagetools create \
+            -t "${image}:${VERSION}" \
+            -t "${image}:latest" \
+            "${image}:${VERSION}-amd64" \
+            "${image}:${VERSION}-arm64"

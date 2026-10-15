@@ -1,16 +1,17 @@
 diff --git a/Dockerfile b/Dockerfile
+index a5a9132..3af7214 100644
 --- a/Dockerfile
 +++ b/Dockerfile
 @@ -14,6 +14,8 @@ pnpm install --silent
  EORUN
- 
+
  ADD app/ .
 +# The frontend imports the shared lunar calendar data from the kernel tree.
 +ADD kernel/av/lunar_calendar_data.json /kernel/av/lunar_calendar_data.json
  ADD scripts/prepare-ocr.py scripts/ocr-assets.json /scripts/
  RUN <<EORUN
  #!/bin/bash -e
-@@ -48,7 +50,8 @@ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg
+@@ -48,20 +50,26 @@ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/g
  FROM go-build AS ocr-build
  ARG TARGETARCH
  # 容器保留 Alpine 基础镜像，使用 musl 构建原生运行时和识别辅助进程。
@@ -20,3 +21,34 @@ diff --git a/Dockerfile b/Dockerfile
  RUN git clone --no-checkout https://github.com/microsoft/onnxruntime /onnxruntime \
      && cd /onnxruntime \
      && git checkout 3a728b75062256951b6e19ce718907cf1a1d4cf0 \
+     && git submodule update --init --recursive
++# musl has no execinfo.h; stack traces are already disabled in Release builds.
++RUN sed -i 's/^#if !defined(__ANDROID__)/#if !defined(NDEBUG) \&\& !defined(__ANDROID__)/' \
++    /onnxruntime/onnxruntime/core/platform/posix/stacktrace.cc
+ RUN python3 /onnxruntime/tools/ci_build/build.py --build_dir /onnxruntime/build \
+     --config Release --update --build --parallel 2 --build_shared_lib \
+-    --skip_tests --allow_running_as_root --compile_no_warning_as_error
++    --skip_tests --allow_running_as_root --compile_no_warning_as_error \
++    --cmake_extra_defines onnxruntime_BUILD_UNIT_TESTS=OFF
+ RUN mkdir -p /ocr/linux-${TARGETARCH} \
+     && cp /onnxruntime/build/Release/libonnxruntime.so.1.24.3 /ocr/linux-${TARGETARCH}/libonnxruntime.so \
+     && cp /onnxruntime/LICENSE /onnxruntime/ThirdPartyNotices.txt /ocr/linux-${TARGETARCH}/ \
+     && go build -trimpath -ldflags "-s -w" -o /ocr/linux-${TARGETARCH}/siyuan-ocr ./ocr/cmd/ocr-worker
+
+ FROM alpine:latest
++ARG TARGETARCH
+ LABEL maintainer="Liang Ding<845765@qq.com>"
+
+ RUN apk add --no-cache ca-certificates tzdata su-exec libstdc++
+@@ -77,6 +85,11 @@ COPY --from=node-build /artifacts .
+ COPY --from=ocr-build /ocr stage/ocr/runtime
+ COPY LICENSE THIRD_PARTY_NOTICES.md .
+
++# Validate OCR library loading and model inference in the final Alpine image.
++RUN runtime="/opt/siyuan/stage/ocr/runtime/linux-${TARGETARCH}" \
++    && printf '{"config":{"library":"%s/libonnxruntime.so","directory":"/opt/siyuan/stage/ocr/models/tiny"}}\n' "${runtime}" \
++    | "${runtime}/siyuan-ocr"
++
+ ENTRYPOINT ["/opt/siyuan/entrypoint.sh"]
+ # 默认启动伺服。若通过 `docker run` / `command:` 传额外参数，需自行带上 `serve` 子命令，
+ # 否则用户参数会整体覆盖 CMD。
