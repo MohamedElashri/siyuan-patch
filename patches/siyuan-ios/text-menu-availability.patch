@@ -1,0 +1,21 @@
+diff --git a/siyuan-ios/ViewController.swift b/siyuan-ios/ViewController.swift
+--- a/siyuan-ios/ViewController.swift
++++ b/siyuan-ios/ViewController.swift
+@@ -65,7 +65,16 @@ class ViewController: UIViewController, WKNavigationDelegate, UIScrollViewDelegate,
+   private var textMenuRequestGeneration: UInt = 0
+   private var textMenuRect = CGRect.zero
++  // Keep storage available on iOS 15; gate the typed accessor instead.
++  private var textMenuInteractionStorage: AnyObject?
+   @available(iOS 16.0, *)
+-  private lazy var textMenuInteraction = UIEditMenuInteraction(delegate: self)
++  private var textMenuInteraction: UIEditMenuInteraction {
++    if let interaction = textMenuInteractionStorage as? UIEditMenuInteraction {
++      return interaction
++    }
++    let interaction = UIEditMenuInteraction(delegate: self)
++    textMenuInteractionStorage = interaction
++    return interaction
++  }
+   private var photoPickerReply: ((Any?, String?) -> Void)?
+   private var photoPickerRequestID: UUID?
+   private var photoPickerTask: Task<Void, Never>?
