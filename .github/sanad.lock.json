@@ -173,25 +173,23 @@
     },
     {
       "file": ".github/workflows/release-ios.yml",
-      "node": "jobs.build.steps[13].uses",
+      "node": "jobs.build.steps[14].uses",
       "owner": "joutvhu",
       "repo": "get-release",
       "path": "",
       "kind": "github-action",
       "logical_ref": "v1",
-      "pinned_sha": "8c3531bba0d249f5e7c3d7e1954d34db9edf2a90",
-      "resolved_at": "2026-09-26T07:32:52Z"
+      "pinned_sha": "8c3531bba0d249f5e7c3d7e1954d34db9edf2a90"
     },
     {
       "file": ".github/workflows/release-ios.yml",
-      "node": "jobs.build.steps[14].uses",
+      "node": "jobs.build.steps[15].uses",
       "owner": "shogo82148",
       "repo": "actions-upload-release-asset",
       "path": "",
       "kind": "github-action",
       "logical_ref": "v1.10.4",
-      "pinned_sha": "aaba0f56bdbc1071f4af234d5cb16055e8a400de",
-      "resolved_at": "2026-09-26T07:32:52Z"
+      "pinned_sha": "aaba0f56bdbc1071f4af234d5cb16055e8a400de"
     },
     {
       "file": ".github/workflows/release-ios.yml",
@@ -208,12 +206,21 @@
       "file": ".github/workflows/release-ios.yml",
       "node": "jobs.build.steps[5].uses",
       "owner": "actions",
+      "repo": "cache",
+      "path": "",
+      "kind": "github-action",
+      "logical_ref": "v5",
+      "pinned_sha": "caa296126883cff596d87d8935842f9db880ef25"
+    },
+    {
+      "file": ".github/workflows/release-ios.yml",
+      "node": "jobs.build.steps[6].uses",
+      "owner": "actions",
       "repo": "setup-node",
       "path": "",
       "kind": "github-action",
       "logical_ref": "v7",
-      "pinned_sha": "820762786026740c76f36085b0efc47a31fe5020",
-      "resolved_at": "2026-09-26T07:32:52Z"
+      "pinned_sha": "820762786026740c76f36085b0efc47a31fe5020"
     },
     {
       "file": ".github/workflows/release-ios.yml",
