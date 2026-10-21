@@ -1,9 +1,0 @@
-workflow_paths = [".github/workflows"]
-cooldown = "7d"
-cooldown_source = "source"
-
-[updates]
-tags = "track"
-branches = "deny"
-unpinned = "deny"
-reusable_workflows = true
