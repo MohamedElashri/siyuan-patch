@@ -118,7 +118,7 @@ jobs:
           echo "xcode=$(xcodebuild -version | shasum -a 256 | awk '{print $1}')" >> "$GITHUB_OUTPUT"
 
       - name: Cache iOS Go packages
-        uses: actions/cache@v5.1.0
+        uses: actions/cache@v6.1.0
         with:
           path: |
             ${{ steps.go_cache.outputs.build }}
