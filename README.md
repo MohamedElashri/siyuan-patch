@@ -42,9 +42,13 @@ Choose the package format for your distribution and architecture:
 
 ### Docker
 
-The multi-architecture image is available on [Docker Hub](https://hub.docker.com/r/melashri/siyuan):
+Multi-architecture images (`linux/amd64` and `linux/arm64`) are published to both GitHub Container Registry (GHCR) and Docker Hub:
 
 ```bash
+# Pull from GitHub Container Registry (recommended, no login required for public images)
+docker pull ghcr.io/mohamedelashri/siyuan:latest
+
+# Or pull from Docker Hub
 docker pull melashri/siyuan:latest
 ```
 
@@ -68,6 +72,11 @@ Several changes have been made to improve privacy and user experience:
 - Error reporting and diagnostic data collection are disabled
 - VIP badge and custom title bar displays are removed
 - System tray minimization is enabled by default when clicking the close button
+
+### Extensibility & Formula Engines
+- **Pluggable Math Formula Renderer Registry**: Provides a generic extension point for plugins (such as [siyuan-typst-plugin](https://github.com/LeonhardtHUST/siyuan-typst-plugin)) to claim and render math formulas before KaTeX runs (zero KaTeX overhead).
+- **Export Pre-Baking**: Pre-bakes custom formulas into self-contained inline SVGs for standalone HTML exports and Electron PDF preview rendering.
+- **Detailed Patch Architecture**: See [PATCHES.md](PATCHES.md) for technical documentation on all applied patches, plugin APIs, and maintenance tooling.
 
 ## Installation Guide
 

@@ -51,6 +51,7 @@ jobs:
           git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/disable-update.patch
           git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/default-config.patch
           git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/mock-vip-user.patch
+          git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/math-renderer-registry.patch
           git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/docker-build.patch
 
           git status
@@ -58,19 +59,36 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.4.1
 
-      - name: Log in to Docker Hub
+      - name: Log in to GHCR
+        uses: docker/login-action@v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub (Optional)
+        if: ${{ env.DOCKER_HUB_USER != '' && env.DOCKER_HUB_PWD != '' }}
         uses: docker/login-action@v4.6.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_PWD }}
+        env:
+          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+          DOCKER_HUB_PWD: ${{ secrets.DOCKER_HUB_PWD }}
 
       - name: Build and push Docker image
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan
         run: |
+          OWNER="${{ github.repository_owner }}"
+          OWNER_LOWER="${OWNER,,}"
+          TAGS="-t ghcr.io/${OWNER_LOWER}/siyuan:${VERSION}-${ARCH}"
+          if [ -n "${DOCKER_HUB_USER}" ]; then
+            TAGS="${TAGS} -t ${DOCKER_HUB_USER}/siyuan:${VERSION}-${ARCH}"
+          fi
           docker buildx build \
             --push \
             --platform "linux/${ARCH}" \
-            -t "${DOCKER_HUB_USER}/siyuan:${VERSION}-${ARCH}" \
+            ${TAGS} \
             .
         env:
           DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
@@ -83,24 +101,47 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: write
     steps:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.4.1
 
-      - name: Log in to Docker Hub
+      - name: Log in to GHCR
+        uses: docker/login-action@v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub (Optional)
+        if: ${{ env.DOCKER_HUB_USER != '' && env.DOCKER_HUB_PWD != '' }}
         uses: docker/login-action@v4.6.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_PWD }}
+        env:
+          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+          DOCKER_HUB_PWD: ${{ secrets.DOCKER_HUB_PWD }}
 
       - name: Publish version and latest tags
         env:
           DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
           VERSION: ${{ inputs.version }}
         run: |
-          image="${DOCKER_HUB_USER}/siyuan"
+          OWNER="${{ github.repository_owner }}"
+          OWNER_LOWER="${OWNER,,}"
+          ghcr_image="ghcr.io/${OWNER_LOWER}/siyuan"
           docker buildx imagetools create \
-            -t "${image}:${VERSION}" \
-            -t "${image}:latest" \
-            "${image}:${VERSION}-amd64" \
-            "${image}:${VERSION}-arm64"
+            -t "${ghcr_image}:${VERSION}" \
+            -t "${ghcr_image}:latest" \
+            "${ghcr_image}:${VERSION}-amd64" \
+            "${ghcr_image}:${VERSION}-arm64"
+
+          if [ -n "${DOCKER_HUB_USER}" ]; then
+            hub_image="${DOCKER_HUB_USER}/siyuan"
+            docker buildx imagetools create \
+              -t "${hub_image}:${VERSION}" \
+              -t "${hub_image}:latest" \
+              "${hub_image}:${VERSION}-amd64" \
+              "${hub_image}:${VERSION}-arm64"
+          fi

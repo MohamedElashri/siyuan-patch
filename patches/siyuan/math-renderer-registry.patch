@@ -1,0 +1,646 @@
+diff --git a/app/src/plugin/index.ts b/app/src/plugin/index.ts
+index 590c704..c568664 100644
+--- a/app/src/plugin/index.ts
++++ b/app/src/plugin/index.ts
+@@ -29,6 +29,11 @@ import {
+     removeBreadcrumbButton as removePluginBreadcrumbButton,
+ } from "./breadcrumbButton";
+ import type {TCustomBlockRender} from "./customBlockRender";
++import type {IMathRenderer} from "../protyle/render/mathRendererRegistry";
++import {
++    registerMathRenderer as registerMathRendererRegistry,
++    unregisterMathRenderer as unregisterMathRendererRegistry,
++} from "../protyle/render/mathRendererRegistry";
+ import {registerPluginCommand} from "./commandAdapter";
+ import {updatePluginKeymap} from "./keymap";
+ import {
+@@ -154,6 +159,24 @@ export class Plugin {
+         // 卸载
+     }
+ 
++    /**
++     * 注册数学公式渲染器：在 KaTeX 渲染前认领公式节点。
++     * 认领成功后该节点不会触发 KaTeX 的加载与渲染，渲染失败自动回退 KaTeX。
++     * @param id 渲染器标识（按插件名自动命名空间化，避免插件间冲突）
++     * @param renderer 渲染器实现
++     */
++    public registerMathRenderer(id: string, renderer: IMathRenderer) {
++        registerMathRendererRegistry(`${this.name}/${id}`, renderer);
++    }
++
++    /**
++     * 注销数学公式渲染器
++     * @param id 注册时使用的标识
++     */
++    public unregisterMathRenderer(id: string) {
++        unregisterMathRendererRegistry(`${this.name}/${id}`);
++    }
++
+     /**
+      * 插件实例就绪后存储数据发生变化时运行，思源会等待返回的 Promise；
+      * 未覆盖该方法时则重载整个插件。
+diff --git a/app/src/plugin/uninstall.ts b/app/src/plugin/uninstall.ts
+index e589a61..7c067b5 100644
+--- a/app/src/plugin/uninstall.ts
++++ b/app/src/plugin/uninstall.ts
+@@ -18,6 +18,7 @@ import {unregisterPluginCommands} from "./commandAdapter";
+ import {sendGlobalShortcut} from "../boot/globalEvent/globalShortcut";
+ import {releaseTrackedRangesByPlugin} from "../protyle/util/trackedRange";
+ import {isSettingsWindow} from "../config/setting/windowContext";
++import {unregisterMathRenderersByPrefix} from "../protyle/render/mathRendererRegistry";
+ /// #if !MOBILE
+ import {applyTopBarEntryVisibility} from "../config/entryVisibility/runtime";
+ /// #endif
+@@ -39,6 +40,7 @@ export const beginPluginTeardown = (plugin: Plugin) => {
+     runCleanup(plugin, "commands", () => unregisterPluginCommands(plugin));
+     runCleanup(plugin, "asset upload", () => cancelAssetUploadsByPlugin(plugin));
+     runCleanup(plugin, "tracked ranges", () => releaseTrackedRangesByPlugin(plugin));
++    runCleanup(plugin, "math renderers", () => unregisterMathRenderersByPrefix(`${plugin.name}/`));
+ };
+ 
+ export const destroyPlugin = (app: App, plugin: Plugin, isUninstall: boolean) => {
+diff --git a/app/src/protyle/export/index.ts b/app/src/protyle/export/index.ts
+index c490572..9db8f32 100644
+--- a/app/src/protyle/export/index.ts
++++ b/app/src/protyle/export/index.ts
+@@ -10,6 +10,7 @@ import {confirmDialog} from "../../dialog/confirmDialog";
+ import {getThemeMode, setInlineStyle} from "../../util/assets";
+ import {getCustomFontStyle} from "../../util/customFont";
+ import {fetchPost, fetchSyncPost} from "../../util/fetch";
++import {bakeMathInHtml} from "../render/mathRender";
+ import {Dialog} from "../../dialog";
+ import {replaceLocalPath} from "../../editor/rename";
+ import {getScreenWidth, isInMobileApp, saveExportFile, setStorageVal} from "../util/compatibility";
+@@ -225,6 +226,30 @@ const renderPDF = async (id: string) => {
+     });
+     const defaultExportPath = await getAvailableExportPath();
+     // data-theme-mode="light" https://github.com/siyuan-note/siyuan/issues/7379
++    // 应用内预取导出内容并烘焙公式：Electron 预览窗口是独立进程，无法运行 Typst 渲染器，
++    // 因此在主窗口把公式渲染为内联 SVG 后注入预览页。
++    let bakedPreviewContent = "";
++    try {
++        const previewResponse = await new Promise<any>((resolve) => {
++            fetchPost("/api/export/exportPreviewHTML", {
++                id,
++                keepJSEmbed: true,
++                keepFold: localData.keepFold,
++                pdf: true,
++                excludeTitleImage: localData.titleImage === false,
++                addTitle: window.siyuan.config.export.addTitle,
++                customTitle: "",
++                merge: localData.mergeSubdocs,
++                mergeDocHeadingMode: localData.mergeDocHeadingMode,
++                mergeContentHeadingMode: localData.mergeContentHeadingMode,
++            }, (response: any) => resolve(response));
++        });
++        if (previewResponse && previewResponse.code === 0 && previewResponse.data) {
++            bakedPreviewContent = await bakeMathInHtml(previewResponse.data.content);
++        }
++    } catch (e) {
++        console.warn("[export] prefetch preview content failed:", e);
++    }
+     const html = `<!DOCTYPE html>
+ <html lang="${window.siyuan.config.appearance.lang}" data-theme-mode="light" data-light-theme="${window.siyuan.config.appearance.themeLight}" data-dark-theme="${window.siyuan.config.appearance.themeDark}">
+ <head>
+@@ -613,6 +638,10 @@ ${getIconScript(servePath)}
+         })
+         Protyle.highlightRender(previewElement, "${servePath}stage/protyle", document.querySelector("#scale").value);
+         previewElement.querySelectorAll('[data-type="NodeMathBlock"]').forEach((item) => {
++            if (item.getAttribute("data-math-baked") === "true" || item.querySelector('[data-math-baked="true"]')) {
++                // 已在主窗口烘焙为内联 SVG，保留 data-render 以免被 KaTeX 覆盖
++                return;
++            }
+             // 超级块内不能移除 width https://github.com/siyuan-note/siyuan/issues/14318
+             item.removeAttribute('data-render');
+         })
+@@ -693,7 +722,11 @@ ${getIconScript(servePath)}
+     }
+     let previewReady = Promise.resolve();
+     let previewRevision = 0;
++    const __bakedMathContent = ${JSON.stringify(bakedPreviewContent)};
+     const renderPreview = async (data) => {
++        if (typeof __bakedMathContent === "string" && __bakedMathContent) {
++            data = Object.assign({}, data, {content: __bakedMathContent});
++        }
+         previewElement.innerHTML = '<div style="padding:8px 0 0 0" class="protyle-wysiwyg${window.siyuan.config.editor.displayBookmarkIcon ? " protyle-wysiwyg--attr" : ""}">' + data.content + '</div>';
+         const wysElement = previewElement.querySelector(".protyle-wysiwyg");
+         wysElement.setAttribute("data-doc-type", data.type || "NodeDocument");
+@@ -1172,6 +1205,10 @@ export const onExport = async (data: IWebSocketData, filePath: string, servePath
+ @media print { body { margin: 0; } }
+ .protyle-wysiwyg {padding: 0; margin: 0;}`
+     } : {js: "", css: ""};
++    // 数学公式应用内预烘焙（导出产物自包含，不依赖导出端脚本）
++    if (data && data.data && typeof data.data.content === "string") {
++        data.data.content = await bakeMathInHtml(data.data.content);
++    }
+     const html = `<!DOCTYPE html>
+ <html lang="${window.siyuan.config.appearance.lang}" data-theme-mode="${isInMobile ? "light" : getThemeMode()}" data-light-theme="${window.siyuan.config.appearance.themeLight}" data-dark-theme="${window.siyuan.config.appearance.themeDark}">
+ <head>
+diff --git a/app/src/protyle/render/mathBoundaries.ts b/app/src/protyle/render/mathBoundaries.ts
+new file mode 100644
+index 0000000..0906c5a
+--- /dev/null
++++ b/app/src/protyle/render/mathBoundaries.ts
+@@ -0,0 +1,40 @@
++import {hasNextSibling, hasPreviousSibling} from "../wysiwyg/getBlock";
++import {Constants} from "../../constants";
++
++/**
++ * Handle cursor boundary characters after inline math rendering.
++ * Keeps cursor navigation, deletion, and selection identical to native SiYuan.
++ */
++export const applyInlineMathBoundaries = (mathElement: HTMLElement) => {
++    const parentTagName = mathElement.parentElement?.tagName || "";
++    const nextSibling = hasNextSibling(mathElement) as HTMLElement;
++    if (!nextSibling) {
++        // Table cell cursor handling https://ld246.com/article/1629191424824
++        if (parentTagName !== "TH" && parentTagName !== "TD") {
++            // Cannot move cursor to end https://github.com/siyuan-note/siyuan/issues/2112
++            mathElement.insertAdjacentText("afterend", "\n");
++        } else {
++            mathElement.insertAdjacentText("afterend", Constants.ZWSP);
++        }
++    } else if (nextSibling && nextSibling.nodeType !== 3 &&
++        (
++            nextSibling.getAttribute("data-type")?.indexOf("inline-math") > -1 ||
++            nextSibling.classList.contains("img")
++        )) {
++        // Adjacent math formula cursor movement / deletion
++        mathElement.after(document.createTextNode(Constants.ZWSP));
++    } else if (nextSibling &&
++        !/^[\u200B\uFEFF]*\n/.test(nextSibling.textContent) &&
++        nextSibling.textContent !== Constants.ZWSP) {
++        // Extra br on deleting character after math formula https://ld246.com/article/1647157880974
++        mathElement.insertAdjacentHTML("beforeend", "&#xFEFF;");
++    }
++    // Cannot move cursor to start of paragraph https://ld246.com/article/1623551823742
++    if (mathElement.previousSibling?.textContent.endsWith("\n")) {
++        mathElement.insertAdjacentText("beforebegin", Constants.ZWSP);
++    } else if (!hasPreviousSibling(mathElement) && ["TH", "TD"].includes(parentTagName)) {
++        mathElement.insertAdjacentText("afterbegin", Constants.ZWSP);
++    } else if (!hasPreviousSibling(mathElement)) {
++        mathElement.insertAdjacentText("beforebegin", Constants.ZWSP);
++    }
++};
+diff --git a/app/src/protyle/render/mathRender.ts b/app/src/protyle/render/mathRender.ts
+index b92ab1f..f95a7e9 100644
+--- a/app/src/protyle/render/mathRender.ts
++++ b/app/src/protyle/render/mathRender.ts
+@@ -1,13 +1,14 @@
+ import {addScript} from "../util/addScript";
+ import {addStyle} from "../util/addStyle";
+ import {Constants} from "../../constants";
+-import {hasNextSibling, hasPreviousSibling} from "../wysiwyg/getBlock";
+ import {hasClosestBlock} from "../util/hasClosest";
+ import {looseJsonParse} from "../../util/functions";
+ import {genRenderFrame} from "./util";
+ import {getHostCapabilities} from "../../util/hostCapabilities";
+ import {getMathRenderSecurity} from "./mathRenderSecurity";
+ import {isFoldedRenderContent} from "./foldedContent";
++import {applyInlineMathBoundaries} from "./mathBoundaries";
++import {findMathRenderer, IMathRenderContext, IMathRenderer} from "./mathRendererRegistry";
+ 
+ const fitMathWidth = (mathElement: HTMLElement, blockElement: HTMLElement | false, isBlock: boolean) => {
+     return new Promise<void>((resolve) => {
+@@ -32,124 +33,224 @@ export const mathRender = (element: Element, cdn = Constants.PROTYLE_CDN, maxWid
+     if (mathElements.length === 0) {
+         return;
+     }
+-    addStyle(`${cdn}/js/katex/katex.min.css?v=0.19.0`, "protyleKatexStyle");
+-    const unrenderedMathElements = mathElements.filter(mathElement =>
+-        mathElement.getAttribute("data-render") !== "true");
+-    if (unrenderedMathElements.length === 0) {
++
++    // Synchronous claim phase: evaluate registered custom renderers before KaTeX CSS/JS are loaded.
++    const claimedMathElements: {
++        element: HTMLElement;
++        renderer: IMathRenderer;
++        context: IMathRenderContext;
++        initialHTML: string;
++    }[] = [];
++    const unrenderedMathElements: HTMLElement[] = [];
++
++    mathElements.forEach((mathElement: HTMLElement) => {
++        if (mathElement.getAttribute("data-render") === "true") {
++            return;
++        }
++        const rawContent = mathElement.getAttribute("data-content") || "";
++        const context: IMathRenderContext = {
++            element: mathElement,
++            mathContent: rawContent,
++            text: typeof (window as any).Lute !== "undefined" && (window as any).Lute.UnEscapeHTMLStr ?
++                (window as any).Lute.UnEscapeHTMLStr(rawContent) : undefined,
++            isBlock: mathElement.tagName === "DIV",
++            maxWidth,
++            applyInlineMathBoundaries: () => applyInlineMathBoundaries(mathElement),
++        };
++        const renderer = findMathRenderer(context);
++        if (renderer) {
++            mathElement.setAttribute("data-render", "true");
++            claimedMathElements.push({
++                element: mathElement,
++                renderer,
++                context,
++                initialHTML: mathElement.innerHTML,
++            });
++        } else {
++            unrenderedMathElements.push(mathElement);
++        }
++    });
++
++    if (unrenderedMathElements.length === 0 && claimedMathElements.length === 0) {
+         return;
+     }
+-    return addScript(`${cdn}/js/katex/katex.min.js?v=0.19.0`, "protyleKatexScript").then(() => {
+-        return addScript(`${cdn}/js/katex/mhchem.min.js?v=0.19.0`, "protyleKatexMhchemScript").then(() => {
+-            const resizePromises: Promise<void>[] = [];
+-            unrenderedMathElements.forEach((mathElement: HTMLElement) => {
+-                mathElement.setAttribute("data-render", "true");
+-                let macros = {};
+-                try {
+-                    macros = looseJsonParse(window.siyuan.config.editor.katexMacros || "{}");
+-                } catch (e) {
+-                    console.warn("KaTex macros is not JSON", e);
+-                }
+-                const isBlock = mathElement.tagName === "DIV";
+-                const remoteKernel = getHostCapabilities().remoteKernel;
+-                const security = getMathRenderSecurity(remoteKernel,
+-                    Boolean(mathElement.closest('[data-protyle-lite-render="safe"]')));
+-                try {
+-                    let mathHTML = window.katex.renderToString(Lute.UnEscapeHTMLStr(mathElement.getAttribute("data-content")), {
+-                        displayMode: isBlock,
+-                        output: "html",
+-                        macros,
+-                        trust: security.trust, // REF: https://katex.org/docs/supported#html
+-                        strict: (errorCode) => errorCode === "unicodeTextInMathMode" ? "ignore" : "warn",
+-                    });
+-                    if (security.sanitize) {
+-                        mathHTML = window.DOMPurify.sanitize(mathHTML);
++
++    const katexPass = (targets: HTMLElement[]) => {
++        if (targets.length === 0) {
++            return Promise.resolve();
++        }
++        addStyle(`${cdn}/js/katex/katex.min.css?v=0.19.0`, "protyleKatexStyle");
++        return addScript(`${cdn}/js/katex/katex.min.js?v=0.19.0`, "protyleKatexScript").then(() => {
++            return addScript(`${cdn}/js/katex/mhchem.min.js?v=0.19.0`, "protyleKatexMhchemScript").then(() => {
++                const resizePromises: Promise<void>[] = [];
++                targets.forEach((mathElement: HTMLElement) => {
++                    mathElement.setAttribute("data-render", "true");
++                    let macros = {};
++                    try {
++                        macros = looseJsonParse(window.siyuan.config.editor.katexMacros || "{}");
++                    } catch (e) {
++                        console.warn("KaTex macros is not JSON", e);
+                     }
+-                    const blockElement = hasClosestBlock(mathElement);
+-                    if (isBlock) {
+-                        genRenderFrame(mathElement);
+-                        mathElement.firstElementChild.firstElementChild.classList.remove("ft__error");
+-                        mathElement.firstElementChild.firstElementChild.setAttribute("contenteditable", "false");
+-                        mathElement.firstElementChild.firstElementChild.innerHTML = mathHTML;
+-                        // https://github.com/siyuan-note/siyuan/issues/3541
+-                        const baseElements = mathElement.querySelectorAll(".katex-html > .katex-base");
+-                        if (baseElements.length > 0) {
+-                            baseElements[baseElements.length - 1].insertAdjacentHTML("afterend", "<span class='fn__flex-1'></span>");
++                    const isBlock = mathElement.tagName === "DIV";
++                    const remoteKernel = getHostCapabilities().remoteKernel;
++                    const security = getMathRenderSecurity(remoteKernel,
++                        Boolean(mathElement.closest('[data-protyle-lite-render="safe"]')));
++                    try {
++                        let mathHTML = window.katex.renderToString(Lute.UnEscapeHTMLStr(mathElement.getAttribute("data-content")), {
++                            displayMode: isBlock,
++                            output: "html",
++                            macros,
++                            trust: security.trust, // REF: https://katex.org/docs/supported#html
++                            strict: (errorCode) => errorCode === "unicodeTextInMathMode" ? "ignore" : "warn",
++                        });
++                        if (security.sanitize) {
++                            mathHTML = window.DOMPurify.sanitize(mathHTML);
+                         }
+-                        // https://github.com/siyuan-note/siyuan/issues/4334
+-                        const newlineElement = mathElement.querySelector(".katex-html > .katex-newline");
+-                        if (newlineElement) {
+-                            newlineElement.parentElement.style.display = "block";
+-                        }
+-                    } else {
+-                        mathElement.classList.remove("ft__error");
+-                        mathElement.innerHTML = mathHTML;
+-                        if (blockElement && mathElement.getBoundingClientRect().width > blockElement.clientWidth) {
+-                            mathElement.style.maxWidth = "100%";
+-                            mathElement.style.overflowX = "auto";
+-                            mathElement.style.overflowY = "hidden";
+-                            mathElement.style.display = "inline-block";
++                        const blockElement = hasClosestBlock(mathElement);
++                        if (isBlock) {
++                            genRenderFrame(mathElement);
++                            mathElement.firstElementChild.firstElementChild.classList.remove("ft__error");
++                            mathElement.firstElementChild.firstElementChild.setAttribute("contenteditable", "false");
++                            mathElement.firstElementChild.firstElementChild.innerHTML = mathHTML;
++                            // https://github.com/siyuan-note/siyuan/issues/3541
++                            const baseElements = mathElement.querySelectorAll(".katex-html > .katex-base");
++                            if (baseElements.length > 0) {
++                                baseElements[baseElements.length - 1].insertAdjacentHTML("afterend", "<span class='fn__flex-1'></span>");
++                            }
++                            // https://github.com/siyuan-note/siyuan/issues/4334
++                            const newlineElement = mathElement.querySelector(".katex-html > .katex-newline");
++                            if (newlineElement) {
++                                newlineElement.parentElement.style.display = "block";
++                            }
+                         } else {
+-                            mathElement.style.maxWidth = "";
+-                            mathElement.style.overflowX = "";
+-                            mathElement.style.overflowY = "";
+-                            mathElement.style.display = "";
+-                        }
+-                        const nextSibling = hasNextSibling(mathElement) as HTMLElement;
+-                        if (!nextSibling) {
+-                            // 表格编辑问题 https://ld246.com/article/1629191424824
+-                            if (mathElement.parentElement.tagName !== "TH" && mathElement.parentElement.tagName !== "TD") {
+-                                // 光标无法移动到末尾 https://github.com/siyuan-note/siyuan/issues/2112
+-                                mathElement.insertAdjacentText("afterend", "\n");
++                            mathElement.classList.remove("ft__error");
++                            mathElement.innerHTML = mathHTML;
++                            if (blockElement && mathElement.getBoundingClientRect().width > blockElement.clientWidth) {
++                                mathElement.style.maxWidth = "100%";
++                                mathElement.style.overflowX = "auto";
++                                mathElement.style.overflowY = "hidden";
++                                mathElement.style.display = "inline-block";
+                             } else {
+-                                // https://ld246.com/article/1651595975481，https://ld246.com/article/1658903123429
+-                                // 随着浏览器的升级，从 beforeend 修改为 afterend
+-                                mathElement.insertAdjacentText("afterend", Constants.ZWSP);
++                                mathElement.style.maxWidth = "";
++                                mathElement.style.overflowX = "";
++                                mathElement.style.overflowY = "";
++                                mathElement.style.display = "";
+                             }
+-                        } else if (nextSibling && nextSibling.nodeType !== 3 &&
+-                            (
+-                                nextSibling.getAttribute("data-type")?.indexOf("inline-math") > -1 ||
+-                                nextSibling.classList.contains("img")
+-                            )) {
+-                            // 相邻的数学公式删除或光标移动有问题
+-                            mathElement.after(document.createTextNode(Constants.ZWSP));
+-                        } else if (nextSibling &&
+-                            !/^[\u200B\uFEFF]*\n/.test(nextSibling.textContent) && // https://github.com/siyuan-note/insider/issues/1089
+-                            // 输入 $a$ 后，光标移动到其他块，再点击 a 后，光标不显示 https://github.com/siyuan-note/insider/issues/1076#issuecomment-1253215515
+-                            nextSibling.textContent !== Constants.ZWSP) {
+-                            // 数学公式后一个字符删除多 br https://ld246.com/article/1647157880974
+-                            // 公式后的换行可能带有零宽边界字符，此时不添加内部占位符，避免划选被截断。
+-                            // https://ld246.com/article/1647329437541
+-                            mathElement.insertAdjacentHTML("beforeend", "&#xFEFF;");
+-                        }
+-                        // 光标无法移动到段首 https://ld246.com/article/1623551823742
+-                        if (mathElement.previousSibling?.textContent.endsWith("\n")) {
+-                            mathElement.insertAdjacentText("beforebegin", Constants.ZWSP);
+-                        } else if (!hasPreviousSibling(mathElement) && ["TH", "TD"].includes(mathElement.parentElement.tagName)) {
+-                            // 单元格中只有数学公式时，光标无法移动到数学公式前
+-                            mathElement.insertAdjacentText("afterbegin", Constants.ZWSP);
+-                        } else if (!hasPreviousSibling(mathElement)) {
+-                            // 段首公式前保留可编辑文本，使全选后的组合输入从文本边界开始。
+-                            mathElement.insertAdjacentText("beforebegin", Constants.ZWSP);
++                            applyInlineMathBoundaries(mathElement);
+                         }
+-                    }
+ 
+-                    // 导出 PDF 时等待公式完成宽度适配后再继续
+-                    if (maxWidth) {
+-                        resizePromises.push(fitMathWidth(mathElement, blockElement, isBlock));
+-                    }
+-                } catch (e) {
+-                    if (isBlock) {
+-                        genRenderFrame(mathElement);
+-                        mathElement.firstElementChild.firstElementChild.setAttribute("contenteditable", "false");
+-                        mathElement.firstElementChild.firstElementChild.textContent = e.message;
+-                        mathElement.firstElementChild.firstElementChild.classList.add("ft__error");
+-                    } else {
+-                        mathElement.textContent = e.message;
+-                        mathElement.classList.add("ft__error");
++                        // 导出 PDF 时等待公式完成宽度适配后再继续
++                        if (maxWidth) {
++                            resizePromises.push(fitMathWidth(mathElement, blockElement, isBlock));
++                        }
++                    } catch (e) {
++                        if (isBlock) {
++                            genRenderFrame(mathElement);
++                            mathElement.firstElementChild.firstElementChild.setAttribute("contenteditable", "false");
++                            mathElement.firstElementChild.firstElementChild.textContent = e.message;
++                            mathElement.firstElementChild.firstElementChild.classList.add("ft__error");
++                        } else {
++                            mathElement.textContent = e.message;
++                            mathElement.classList.add("ft__error");
++                        }
+                     }
+-                }
++                });
++                return Promise.all(resizePromises).then((): undefined => undefined);
+             });
+-            return Promise.all(resizePromises).then((): undefined => undefined);
+         });
++    };
++
++    // Execute custom renderers asynchronously. If any renderer fails or declines, roll back DOM and fallback to KaTeX.
++    const failedMathElements: HTMLElement[] = [];
++    const claimedPromise = Promise.all(claimedMathElements.map(item =>
++        Promise.resolve().then(() => item.renderer.render(item.context)).then((rendered) => {
++            if (rendered === false) {
++                throw new Error("Renderer declined");
++            }
++        }).catch((error) => {
++            console.warn("[mathRender] Custom renderer failed, fallback to KaTeX:", error);
++            item.element.removeAttribute("data-render");
++            item.element.removeAttribute("data-math-baked");
++            item.element.innerHTML = item.initialHTML;
++            failedMathElements.push(item.element);
++        })
++    )).then(() => failedMathElements.length > 0 ? katexPass(failedMathElements) : undefined);
++
++    return Promise.all([katexPass(unrenderedMathElements), claimedPromise]).then((): undefined => undefined);
++};
++
++/**
++ * Helper to recursively flatten any ShadowRoot instances within an element into inline DOM.
++ */
++const flattenShadowRoots = (root: Node) => {
++    if (!root) return;
++    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
++    const elementsWithShadow: HTMLElement[] = [];
++    let currentNode = walker.currentNode as HTMLElement;
++    while (currentNode) {
++        if (currentNode.shadowRoot) {
++            elementsWithShadow.push(currentNode);
++        }
++        currentNode = walker.nextNode() as HTMLElement;
++    }
++    elementsWithShadow.forEach((el) => {
++        if (el.shadowRoot) {
++            flattenShadowRoots(el.shadowRoot);
++            const wrapper = document.createElement("span");
++            wrapper.className = "protyle-math__baked";
++            wrapper.innerHTML = el.shadowRoot.innerHTML;
++            el.replaceWith(wrapper);
++        }
+     });
+ };
++
++/**
++ * Export baking: Renders math formulas in an HTML fragment into static, self-contained inline SVG/HTML.
++ * Ensures HTML exports and Electron PDF preview windows (which run in separate processes without
++ * plugin runtimes) can display formulas without external runtimes.
++ */
++export const bakeMathInHtml = async (html: string) => {
++    if (!html || !html.includes('data-subtype="math"')) {
++        return html;
++    }
++    try {
++        const container = document.createElement("div");
++        container.className = "protyle-wysiwyg";
++        container.innerHTML = html;
++        const mathElements = Array.from(container.querySelectorAll('[data-subtype="math"]')) as HTMLElement[];
++        if (mathElements.length === 0) {
++            return html;
++        }
++
++        await mathRender(container, Constants.PROTYLE_CDN, true);
++
++        for (const el of mathElements) {
++            const context: IMathRenderContext = {
++                element: el,
++                mathContent: el.getAttribute("data-content") || "",
++                text: typeof (window as any).Lute !== "undefined" && (window as any).Lute.UnEscapeHTMLStr ?
++                    (window as any).Lute.UnEscapeHTMLStr(el.getAttribute("data-content") || "") : undefined,
++                isBlock: el.tagName === "DIV",
++                maxWidth: true,
++                applyInlineMathBoundaries: () => applyInlineMathBoundaries(el),
++            };
++            const renderer = findMathRenderer(context);
++            if (renderer && typeof renderer.bake === "function") {
++                try {
++                    await renderer.bake(context);
++                } catch (e) {
++                    console.warn("[export] Custom renderer bake failed:", e);
++                }
++            }
++            flattenShadowRoots(el);
++            el.setAttribute("data-math-baked", "true");
++            el.setAttribute("data-render", "true");
++        }
++        return container.innerHTML;
++    } catch (e) {
++        console.warn("[export] bake math failed:", e);
++        return html;
++    }
++};
++
++(window as any).__siyuanBakeMathForExport = bakeMathInHtml;
+diff --git a/app/src/protyle/render/mathRendererRegistry.ts b/app/src/protyle/render/mathRendererRegistry.ts
+new file mode 100644
+index 0000000..33d25da
+--- /dev/null
++++ b/app/src/protyle/render/mathRendererRegistry.ts
+@@ -0,0 +1,104 @@
++/**
++ * Math formula renderer registry (mathRendererRegistry)
++ *
++ * Allows plugins to claim formula rendering before KaTeX runs.
++ * - canRender: synchronous, lightweight claim check before KaTeX JS/CSS are loaded.
++ * - render: asynchronous render execution. Returns boolean (false triggers KaTeX fallback) or throws error.
++ * - bake: optional export baking hook to serialize custom formula to static HTML/SVG.
++ * - priority: optional priority ordering (higher priority renderers are checked first, default 0).
++ */
++
++export interface IMathRenderContext {
++    /** Target DOM element: div[data-subtype="math"] (block) or span[data-subtype="math"] (inline) */
++    element: HTMLElement;
++    /** Raw data-content (same as KaTeX input) */
++    mathContent: string;
++    /** Unescaped math expression if available */
++    text?: string;
++    /** Whether this is a block formula (DIV) or inline formula (SPAN) */
++    isBlock: boolean;
++    /** Whether width adaptation is requested (e.g. for PDF export) */
++    maxWidth: boolean;
++    /**
++     * Helper to apply native cursor boundary zero-width spaces/newlines for inline math.
++     * Can be invoked by custom renderers after setting inner HTML to ensure standard caret movement.
++     */
++    applyInlineMathBoundaries: () => void;
++}
++
++export interface IMathRenderer {
++    /** Synchronous check to claim this math node */
++    canRender: (context: IMathRenderContext) => boolean;
++    /** Asynchronous render; return false or throw to trigger fallback to KaTeX */
++    render: (context: IMathRenderContext) => Promise<boolean | void>;
++    /** Optional export baking hook; if omitted, generic shadow DOM / SVG flattening is applied */
++    bake?: (context: IMathRenderContext) => Promise<boolean | void>;
++    /** Priority (higher numbers checked first, default 0) */
++    priority?: number;
++}
++
++interface IRegisteredRenderer {
++    id: string;
++    renderer: IMathRenderer;
++    priority: number;
++}
++
++const renderers: IRegisteredRenderer[] = [];
++
++/**
++ * Register a math renderer. Re-registering with the same ID replaces the previous renderer.
++ */
++export const registerMathRenderer = (id: string, renderer: IMathRenderer) => {
++    const priority = typeof renderer.priority === "number" ? renderer.priority : 0;
++    const index = renderers.findIndex(item => item.id === id);
++    if (index > -1) {
++        renderers[index] = {id, renderer, priority};
++    } else {
++        renderers.push({id, renderer, priority});
++    }
++    renderers.sort((a, b) => b.priority - a.priority);
++};
++
++/**
++ * Unregister a math renderer by ID.
++ */
++export const unregisterMathRenderer = (id: string) => {
++    const index = renderers.findIndex(item => item.id === id);
++    if (index > -1) {
++        renderers.splice(index, 1);
++    }
++};
++
++/**
++ * Unregister all math renderers whose ID starts with the specified prefix (e.g. "pluginName/").
++ */
++export const unregisterMathRenderersByPrefix = (prefix: string) => {
++    for (let i = renderers.length - 1; i >= 0; i--) {
++        if (renderers[i].id.startsWith(prefix)) {
++            renderers.splice(i, 1);
++        }
++    }
++};
++
++/**
++ * Find the highest priority renderer that claims the node.
++ */
++export const findMathRenderer = (context: IMathRenderContext): IMathRenderer | undefined => {
++    for (const item of renderers) {
++        try {
++            if (item.renderer.canRender(context)) {
++                return item.renderer;
++            }
++        } catch (error) {
++            console.warn(`[mathRendererRegistry] Renderer [${item.id}] canRender failed:`, error);
++        }
++    }
++    return undefined;
++};
++
++/**
++ * Retrieve a registered renderer by ID.
++ */
++export const getMathRenderer = (id: string): IMathRenderer | undefined => {
++    return renderers.find(item => item.id === id)?.renderer;
++};

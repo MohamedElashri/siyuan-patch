@@ -39,6 +39,7 @@ jobs:
           git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/disable-update.patch
           git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/default-config.patch
           git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/mock-vip-user.patch
+          git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/math-renderer-registry.patch
 
           cd ..
 
