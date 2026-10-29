@@ -1,19 +1,19 @@
 diff --git a/Dockerfile b/Dockerfile
-index 3adef1c..9825557 100644
+index 42c33c5..0b891e6 100644
 --- a/Dockerfile
 +++ b/Dockerfile
 @@ -148,6 +148,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
  COPY --from=onnx-runtime /onnx-artifacts/ /ocr/linux-${TARGETARCH}/
-
+ 
  FROM ${ALPINE_IMAGE}
 +ARG TARGETARCH
  LABEL maintainer="Liang Ding<845765@qq.com>"
-
- RUN apk add --no-cache ca-certificates tzdata su-exec libstdc++
+ 
+ RUN apk add --no-cache 'ca-certificates>=20261020-r0' tzdata su-exec libstdc++
 @@ -163,6 +164,11 @@ COPY --from=node-build /artifacts .
  COPY --from=ocr-build /ocr stage/ocr/runtime
  COPY LICENSE THIRD_PARTY_NOTICES.md .
-
+ 
 +# Validate OCR library loading and model inference in the final Alpine image.
 +RUN runtime="/opt/siyuan/stage/ocr/runtime/linux-${TARGETARCH}" \
 +    && printf '{"config":{"library":"%s/libonnxruntime.so","directory":"/opt/siyuan/stage/ocr/models/tiny"}}\n' "${runtime}" \

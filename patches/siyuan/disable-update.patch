@@ -1,8 +1,8 @@
 diff --git a/kernel/api/system.go b/kernel/api/system.go
-index edf151e..258d4de 100644
+index cd9c58b..0d97a41 100644
 --- a/kernel/api/system.go
 +++ b/kernel/api/system.go
-@@ -425,8 +425,7 @@ func normalizeCustomEmojiPath(name, ext string) (string, error) {
+@@ -413,8 +413,7 @@ func normalizeCustomEmojiPath(name, ext string) (string, error) {
  var checkUpdate = contractHandler(apicontract.SystemCheckUpdate, func(c *gin.Context, request apicontract.SystemCheckUpdateRequest) (ret apicontract.Response[apicontract.Null]) {
  	ret = apicontract.Success(apicontract.Null{})
  
@@ -13,10 +13,10 @@ index edf151e..258d4de 100644
  })
  
 diff --git a/kernel/conf/system.go b/kernel/conf/system.go
-index c1f30b5..24eca99 100644
+index 83bc953..85b0630 100644
 --- a/kernel/conf/system.go
 +++ b/kernel/conf/system.go
-@@ -73,7 +73,7 @@ type Onboarding struct {
+@@ -61,7 +61,7 @@ type Onboarding struct {
  func NewSystem() *System {
  	return &System{
  		NetworkProxy:       &NetworkProxy{},
@@ -26,10 +26,10 @@ index c1f30b5..24eca99 100644
  	}
  }
 diff --git a/kernel/model/mount.go b/kernel/model/mount.go
-index 6961d9c..a869b3f 100644
+index 593e289..cece4fb 100644
 --- a/kernel/model/mount.go
 +++ b/kernel/model/mount.go
-@@ -567,8 +567,8 @@ func mountBox(boxID string) (alreadyMount bool, err error) {
+@@ -579,8 +579,8 @@ func mountBox(boxID string) (alreadyMount bool, err error) {
  		task.AppendAsyncTaskWithDelay(task.PushMsg, 3*time.Second, util.PushErrMsg, Conf.Language(244), 7000)
  		go func() {
  			// 每次打开帮助文档时自动检查版本更新并提醒 https://github.com/siyuan-note/siyuan/issues/5057
@@ -41,10 +41,10 @@ index 6961d9c..a869b3f 100644
  	}
  
 diff --git a/kernel/model/updater.go b/kernel/model/updater.go
-index 480277b..70352ed 100644
+index fa527ee..1e146b6 100644
 --- a/kernel/model/updater.go
 +++ b/kernel/model/updater.go
-@@ -31,6 +31,7 @@ import (
+@@ -20,6 +20,7 @@ import (
  	"github.com/88250/gulu"
  	"github.com/imroc/req/v3"
  	"github.com/siyuan-note/logging"
@@ -52,14 +52,16 @@ index 480277b..70352ed 100644
  	"github.com/siyuan-note/siyuan/kernel/util"
  	"golang.org/x/mod/semver"
  )
-@@ -303,6 +304,10 @@ func skipNewVerInstallPkg() bool {
+@@ -383,7 +384,11 @@ func skipNewVerInstallPkg() bool {
  		}
  	}
  
+-	if skipInstallPkgPlatformCached == 1 {
 +	// Disable automatic update downloads, including for existing configurations.
 +	if confSystemSnapshot.DownloadInstallPkg {
 +		confSystemSnapshot = UpdateSystemConf(func(s *conf.System) { s.DownloadInstallPkg = false })
 +	}
- 	if skipInstallPkgPlatformCached == 1 || !confSystemSnapshot.DownloadInstallPkg {
++	if skipInstallPkgPlatformCached == 1 || !confSystemSnapshot.DownloadInstallPkg {
  		return true
  	}
+ 	return false
