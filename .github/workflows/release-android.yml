@@ -151,7 +151,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Android
-        uses: shogo82148/actions-upload-release-asset@v1.10.6
+        uses: shogo82148/actions-upload-release-asset@v1.10.7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

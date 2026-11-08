@@ -362,7 +362,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Electron App
-        uses: shogo82148/actions-upload-release-asset@v1.10.6
+        uses: shogo82148/actions-upload-release-asset@v1.10.7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -374,7 +374,7 @@ jobs:
 
       - name: Upload DEB Package
         if: matrix.config.goos == 'linux'
-        uses: shogo82148/actions-upload-release-asset@v1.10.6
+        uses: shogo82148/actions-upload-release-asset@v1.10.7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -386,7 +386,7 @@ jobs:
 
       - name: Upload AppImage
         if: matrix.config.goos == 'linux'
-        uses: shogo82148/actions-upload-release-asset@v1.10.6
+        uses: shogo82148/actions-upload-release-asset@v1.10.7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -398,7 +398,7 @@ jobs:
 
       - name: Upload AppImage update information
         if: matrix.config.goos == 'linux'
-        uses: shogo82148/actions-upload-release-asset@v1.10.6
+        uses: shogo82148/actions-upload-release-asset@v1.10.7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -410,7 +410,7 @@ jobs:
 
       - name: Upload RPM Package
         if: matrix.config.goos == 'linux'
-        uses: shogo82148/actions-upload-release-asset@v1.10.6
+        uses: shogo82148/actions-upload-release-asset@v1.10.7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -445,7 +445,7 @@ jobs:
 
       - name: Upload Arch Linux Package
         if: matrix.config.goos == 'linux'
-        uses: shogo82148/actions-upload-release-asset@v1.10.6
+        uses: shogo82148/actions-upload-release-asset@v1.10.7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
