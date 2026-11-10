@@ -1,16 +1,16 @@
 diff --git a/kernel/conf/appearance.go b/kernel/conf/appearance.go
-index a941a56..7ac78f8 100644
+index ba9ece8..21945b2 100644
 --- a/kernel/conf/appearance.go
 +++ b/kernel/conf/appearance.go
-@@ -70,7 +70,7 @@ func NewAppearanceForContainer(mobile bool) *Appearance {
- 		CodeBlockThemeLight: "github",
- 		CodeBlockThemeDark:  "base16/dracula",
- 		Lang:                "en",
--		CloseButtonBehavior: 0,
-+		CloseButtonBehavior: 1,
- 		HideToolbar:         true,
- 		HideStatusBar:       false,
- 		StatusBar:           util.NewStatusBar(mobile),
+@@ -91,7 +91,7 @@ func NewAppearanceForContainer(mobile bool) *Appearance {
+ 		CodeBlockThemeLight:   "github",
+ 		CodeBlockThemeDark:    "base16/dracula",
+ 		Lang:                  "en",
+-		CloseButtonBehavior:   0,
++		CloseButtonBehavior:   1,
+ 		HideToolbar:           true,
+ 		HideStatusBar:         false,
+ 		ShowFloatingStatusBar: false,
 diff --git a/kernel/conf/sync.go b/kernel/conf/sync.go
 index 2fdeb79..3156dad 100644
 --- a/kernel/conf/sync.go
