@@ -111,16 +111,21 @@ jobs:
       - name: Fix Gradle repositories (replace unreliable aliyun mirrors)
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan-android
         run: |
-          # Fix root build.gradle - replace aliyun repos with google/mavenCentral as primary
-          sed -i "s|maven { url 'https://maven.aliyun.com/repository/google' }|google()|g" build.gradle
-          sed -i "s|maven { url 'https://maven.aliyun.com/repository/public' }|mavenCentral()|g" build.gradle
-          sed -i "s|maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }||g" build.gradle
+          # Support both Groovy URL forms: url '...' and url = '...'.
+          sed -E -i "s|maven \{ url[[:space:]]*(=[[:space:]]*)?'https://maven.aliyun.com/repository/google' \}|google()|g" build.gradle
+          sed -E -i "s|maven \{ url[[:space:]]*(=[[:space:]]*)?'https://maven.aliyun.com/repository/public' \}|mavenCentral()|g" build.gradle
+          sed -E -i "s|maven \{ url[[:space:]]*(=[[:space:]]*)?'https://maven.aliyun.com/repository/gradle-plugin' \}||g" build.gradle
           
           # Fix app/build.gradle - add google() and mavenCentral() to repositories
           sed -i "/repositories {/a\\
                   google()\\
                   mavenCentral()\\
           " app/build.gradle
+
+          if grep -Eq 'https://maven[.]aliyun[.]com/repository/' build.gradle app/build.gradle; then
+            echo "Aliyun Maven mirrors remain after repository replacement"
+            exit 1
+          fi
           
           echo "=== Root build.gradle ==="
           cat build.gradle
