@@ -1,0 +1,43 @@
+diff --git a/siyuan-ios.xcodeproj/project.pbxproj b/siyuan-ios.xcodeproj/project.pbxproj
+index 211a455..6f339b6 100644
+--- a/siyuan-ios.xcodeproj/project.pbxproj
++++ b/siyuan-ios.xcodeproj/project.pbxproj
+@@ -289,13 +289,12 @@
+ 		};
+ /* End PBXProject section */
+ 
+-/* Begin XCRemoteSwiftPackageReference section */
++/* Begin XCLocalSwiftPackageReference section */
+ 		A19984000000000000000003 /* onnxruntime-swift-package-manager */ = {
+-			isa = XCRemoteSwiftPackageReference;
+-			repositoryURL = "https://github.com/microsoft/onnxruntime-swift-package-manager";
+-			requirement = {kind = exactVersion; version = 1.24.2; };
++			isa = XCLocalSwiftPackageReference;
++			relativePath = "onnxruntime-swift-package-manager";
+ 		};
+-/* End XCRemoteSwiftPackageReference section */
++/* End XCLocalSwiftPackageReference section */
+ 
+ /* Begin XCSwiftPackageProductDependency section */
+ 		A19984000000000000000002 /* onnxruntime */ = {
+diff --git a/siyuan-ios.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved b/siyuan-ios.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+deleted file mode 100644
+index 314c755..0000000
+--- a/siyuan-ios.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
++++ /dev/null
+@@ -1,15 +0,0 @@
+-{
+-  "originHash" : "54a530a8a66c1ee0cc1c6dd34159a96243f09d436e10ae5178973082bff1ef28",
+-  "pins" : [
+-    {
+-      "identity" : "onnxruntime-swift-package-manager",
+-      "kind" : "remoteSourceControl",
+-      "location" : "https://github.com/microsoft/onnxruntime-swift-package-manager",
+-      "state" : {
+-        "revision" : "b7fb7f7dea8a2469e6335d95a61b8f36d0dc83b2",
+-        "version" : "1.24.2"
+-      }
+-    }
+-  ],
+-  "version" : 3
+-}
