@@ -1,0 +1,55 @@
+diff --git a/scripts/ocr-assets.json b/scripts/ocr-assets.json
+index 56cd4ab..a2cb7c8 100644
+--- a/scripts/ocr-assets.json
++++ b/scripts/ocr-assets.json
+@@ -127,6 +127,30 @@
+         "size": 74397435,
+         "library": "onnxruntime.dll"
+       }
++    },
++    "linux-arm64": {
++      "url": "https://github.com/siyuan-note/siyuan/releases/download/v3.8.11/siyuan-3.8.11-linux-arm64.tar.gz",
++      "sha256": "7d1c380b14baa8d83a71aa9011b83d720c0ebe5edaddfb939a93c489a6c7f56e",
++      "format": "tar.gz",
++      "path": "siyuan-3.8.11-linux-arm64/resources/stage/ocr/runtime/linux-arm64",
++      "runtimeSource": {
++        "algorithm": "sha256",
++        "digest": "15100fb88b4c692cdd6bf2cca5f4a26a3806cebca8136de6681e2aba4b2ea033",
++        "size": 7166580,
++        "library": "libonnxruntime.so"
++      }
++    },
++    "windows-arm64": {
++      "url": "https://github.com/siyuan-note/siyuan/releases/download/v3.8.11/siyuan-3.8.11-win-arm64.exe",
++      "sha256": "cf41504ce45d676189d96ab9fee9c0ef9222c120241732f8db4e48d11fc8dd3a",
++      "format": "nsis",
++      "path": "resources/stage/ocr/runtime/windows-arm64",
++      "runtimeSource": {
++        "algorithm": "sha256",
++        "digest": "0b9ee92bcd1f82f684b574cb413f27595e0d2f7b96ec6d02b30301f45ad313b0",
++        "size": 75093351,
++        "library": "onnxruntime.dll"
++      }
+     }
+   }
+ }
+diff --git a/scripts/prepare-ocr.py b/scripts/prepare-ocr.py
+index 924f690..535f91f 100644
+--- a/scripts/prepare-ocr.py
++++ b/scripts/prepare-ocr.py
+@@ -427,10 +427,12 @@ def recover_published_runtime(target, entry, directory):
+             if not sevenzip:
+                 raise RuntimeError("7-Zip is required to recover the published Windows OCR runtime")
+             outer = temporary / "installer"
+-            subprocess.run([sevenzip, "x", str(package), f"-o{outer}", "$PLUGINSDIR/app-64.7z", "-y"], check=True)
+-            inner = outer / "$PLUGINSDIR/app-64.7z"
++            archives = {"windows-amd64": "app-64.7z", "windows-arm64": "app-arm64.7z"}
++            member = "$PLUGINSDIR/" + archives[target]
++            subprocess.run([sevenzip, "x", str(package), f"-o{outer}", member, "-y"], check=True)
++            inner = outer / member
+             if not inner.is_file() or inner.is_symlink():
+-                raise ValueError("Missing published x64 application archive")
++                raise ValueError(f"Missing published application archive for {target}")
+             # 只读取当前架构的 ONNX 文件；CRT 与工作进程由本次构建重新准备。
+             unpacked = temporary / "application"
+             members = [recovery["path"].rstrip("/") + "/" + name for name in sorted(allowed)]

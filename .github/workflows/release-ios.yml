@@ -54,6 +54,20 @@ jobs:
           git status
           git diff
 
+      - name: Restore the pinned ONNX Runtime Swift package
+        if: inputs.version == 'v3.8.11'
+        working-directory: ${{ github.workspace }}/siyuan-note/siyuan-ios
+        run: |
+          git apply ../patches/siyuan-ios/onnxruntime-local-package.patch
+          # The mirror carries the exact revision from the upstream Package.resolved.
+          git clone --depth=1 --branch 1.24.2 \
+            https://github.com/dominionapps/onnxruntime-swift-package-manager.git
+          revision=$(git -C onnxruntime-swift-package-manager rev-parse HEAD)
+          if [ "$revision" != b7fb7f7dea8a2469e6335d95a61b8f36d0dc83b2 ]; then
+            echo "Unexpected ONNX Runtime Swift package revision: $revision" >&2
+            exit 1
+          fi
+
       - name: Generate app icon from logo.icon
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan-ios
         run: |
@@ -175,6 +189,7 @@ jobs:
       - name: ios assets
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan/app/
         run: |
+          python3 ../scripts/prepare-ocr.py
           mkdir -p ${{ github.workspace }}/siyuan-note/siyuan-ios/app/
           cp -r ./appearance ./guide ./stage ./changelogs ${{ github.workspace }}/siyuan-note/siyuan-ios/app/
 

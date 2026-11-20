@@ -20,8 +20,10 @@ jobs:
         include:
           - os: ubuntu-latest
             arch: amd64
+            onnx_digest: sha256:4f027099cfc94c3715c0ef50891d469ffefa99040edd13800e7fa42dc2a4574d
           - os: ubuntu-24.04-arm
             arch: arm64
+            onnx_digest: sha256:e8ce09abf4a191fbb6ac84582f1e77116be55b877d4a8f740b8c54ca31d0c779
     permissions:
       packages: write
       contents: read
@@ -67,15 +69,22 @@ jobs:
       - name: Build and push Docker image
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan
         run: |
+          build_args=()
+          if [[ "$VERSION" == v3.8.11 ]]; then
+            # Reuse the same musl ONNX artifacts as the official v3.8.11 builds.
+            build_args+=(--build-arg "ONNX_IMAGE=docker.io/b3log/siyuan@${ONNX_DIGEST}")
+          fi
           docker buildx build \
             --push \
             --platform "linux/${ARCH}" \
             -t "${DOCKER_HUB_USER}/siyuan:${VERSION}-${ARCH}" \
+            "${build_args[@]}" \
             .
         env:
           DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
           VERSION: ${{ inputs.version }}
           ARCH: ${{ matrix.arch }}
+          ONNX_DIGEST: ${{ matrix.onnx_digest }}
 
   publish:
     name: Publish multi-architecture image

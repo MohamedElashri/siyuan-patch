@@ -145,6 +145,9 @@ jobs:
           git apply "${workspace}/siyuan-note/patches/siyuan/disable-update.patch"
           git apply "${workspace}/siyuan-note/patches/siyuan/default-config.patch"
           git apply "${workspace}/siyuan-note/patches/siyuan/mock-vip-user.patch"
+          if [ "${VERSION}" = "v3.8.11" ]; then
+            git apply "${workspace}/siyuan-note/patches/siyuan/ocr-arm64-recovery.patch"
+          fi
 
           git status
 
@@ -237,6 +240,18 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y fakeroot dpkg-dev imagemagick libarchive-tools rpm zstd zsync
+
+      - name: Make 7-Zip available for Windows OCR recovery
+        if: inputs.version == 'v3.8.11' && matrix.config.goos == 'windows'
+        shell: pwsh
+        run: |
+          if (-not (Get-Command 7z, 7za -ErrorAction SilentlyContinue)) {
+            $sevenZip = Join-Path $env:ProgramFiles '7-Zip'
+            if (-not (Test-Path (Join-Path $sevenZip '7z.exe'))) {
+              $sevenZip = Join-Path '${{ steps.msys2.outputs.msys2-location }}' 'usr\bin'
+            }
+            $sevenZip | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          }
 
       - name: Building Electron
         run: pnpm run ${{ matrix.config.electron_args }}
