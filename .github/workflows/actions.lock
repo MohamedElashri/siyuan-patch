@@ -6,7 +6,7 @@ workflows:
     '.github/workflows/release-android.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-go@v7.0.0'
-        - 'actions/setup-java@v6.1.0'
+        - 'actions/setup-java@v6.3.0'
         - 'actions/setup-node@v7.1.0'
         - 'joutvhu/get-release@v1.0.4'
         - 'shogo82148/actions-upload-release-asset@v1.10.6'
@@ -50,9 +50,9 @@ dependencies:
         commit: 'sha1-b7ad1dad31e06c5925ef5d2fc7ad053ef454303e'
         owner_id: 44036562
         repo_id: 192624594
-    'actions/setup-java@v6.1.0':
-        ref: 'v6.1.0'
-        commit: 'sha1-b843ebf9b913146b38da2eaa7aeddf76074ae1ad'
+    'actions/setup-java@v6.3.0':
+        ref: 'v6.3.0'
+        commit: 'sha1-d1374f8ac74474200d16ef8ecee22c7ae7a51880'
         owner_id: 44036562
         repo_id: 196057608
     'actions/setup-node@v7.1.0':
