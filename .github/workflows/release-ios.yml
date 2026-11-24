@@ -68,6 +68,31 @@ jobs:
             exit 1
           fi
 
+          # The ONNX Runtime pod CDN is unavailable. Use the same release versions from NuGet.
+          cd onnxruntime-swift-package-manager
+          mkdir -p ci-artifacts
+          package_file=$(mktemp)
+          trap 'rm -f "$package_file"' EXIT
+
+          fetch_framework() {
+            local package=$1 version=$2 framework=$3 sha256=$4
+            local archive="ci-artifacts/${framework}.xcframework.zip"
+            curl --fail --silent --show-error --location --retry 3 --max-time 300 \
+              "https://api.nuget.org/v3-flatcontainer/$package/$version/$package.$version.nupkg" \
+              --output "$package_file"
+            unzip -p "$package_file" "runtimes/ios/native/${framework}.xcframework.zip" > "$archive"
+            printf '%s  %s\n' "$sha256" "$archive" | shasum -a 256 --check
+          }
+
+          fetch_framework microsoft.ml.onnxruntime 1.24.2 onnxruntime \
+            a161fe8628ed3bf8d97915bd34063fe115f58a1b9b0f4f0baec78c62487ac3ee
+          fetch_framework microsoft.ml.onnxruntime.extensions 0.13.0 onnxruntime_extensions \
+            aaeac57ee5df8a945fdb2522640acc9e1e7fd89907d45094e9371a0e70c5ea42
+
+          # SwiftPM resolves these paths relative to the pinned Package.swift.
+          echo 'ORT_POD_LOCAL_PATH=ci-artifacts/onnxruntime.xcframework.zip' >> "$GITHUB_ENV"
+          echo 'ORT_EXTENSIONS_POD_LOCAL_PATH=ci-artifacts/onnxruntime_extensions.xcframework.zip' >> "$GITHUB_ENV"
+
       - name: Generate app icon from logo.icon
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan-ios
         run: |
