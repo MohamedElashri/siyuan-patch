@@ -70,8 +70,8 @@ jobs:
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan
         run: |
           build_args=()
-          if [[ "$VERSION" == v3.8.11 ]]; then
-            # Reuse the same musl ONNX artifacts as the official v3.8.11 builds.
+          if [[ "$VERSION" == v3.8.11 || "$VERSION" == v3.8.12 ]]; then
+            # Both official releases use these pinned musl ONNX artifacts.
             build_args+=(--build-arg "ONNX_IMAGE=docker.io/b3log/siyuan@${ONNX_DIGEST}")
           fi
           docker buildx build \

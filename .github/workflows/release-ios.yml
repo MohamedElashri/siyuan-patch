@@ -55,7 +55,7 @@ jobs:
           git diff
 
       - name: Restore the pinned ONNX Runtime Swift package
-        if: inputs.version == 'v3.8.11'
+        if: inputs.version == 'v3.8.11' || inputs.version == 'v3.8.12'
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan-ios
         run: |
           git apply ../patches/siyuan-ios/onnxruntime-local-package.patch
